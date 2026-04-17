@@ -2,6 +2,19 @@
 // PISOS CONNECT — CONFIG CENTRAL
 // ============================================================
 
+// Detecta automaticamente o prefixo do caminho (basePath).
+// No GitHub Pages o site fica em /Pisos-Connect/; no Vercel/localhost fica em /.
+// Ex.: pathname = "/Pisos-Connect/app/home.html" → basePath = "/Pisos-Connect"
+const _basePath = (() => {
+    const parts = window.location.pathname.split('/');
+    // Se o segundo segmento não for uma página conhecida, é um subdiretório de deploy
+    const knownRoots = ['app', 'admin', 'js', 'css', 'assets', ''];
+    if (parts.length > 1 && !knownRoots.includes(parts[1]) && !parts[1].includes('.')) {
+        return '/' + parts[1];
+    }
+    return '';
+})();
+
 const CONFIG = {
     app: {
         nome: "Pisos Connect",
@@ -22,16 +35,16 @@ const CONFIG = {
     // Fator de quebra técnica (10% — padrão do setor)
     fator_quebra: 1.10,
 
-    // Rotas do app
+    // Rotas do app — prefixadas com basePath para funcionar no GitHub Pages e Vercel
     rotas: {
-        login: "/login.html",
-        home: "/app/home.html",
-        catalogo: "/app/catalogo.html",
-        produto: "/app/produto.html",
-        sacola: "/app/sacola.html",
-        pedidos: "/app/pedidos.html",
-        admin: "/admin/index.html",
-        minhaLoja: "/app/minha-loja.html"
+        login:     _basePath + '/login.html',
+        home:      _basePath + '/app/home.html',
+        catalogo:  _basePath + '/app/catalogo.html',
+        produto:   _basePath + '/app/produto.html',
+        sacola:    _basePath + '/app/sacola.html',
+        pedidos:   _basePath + '/app/pedidos.html',
+        admin:     _basePath + '/admin/index.html',
+        minhaLoja: _basePath + '/app/minha-loja.html'
     },
 
     // Template da mensagem WhatsApp ao confirmar pedido

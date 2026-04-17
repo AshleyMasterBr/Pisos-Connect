@@ -6,7 +6,7 @@
 const Auth = (() => {
 
     // Detecta se está numa página admin
-    const isAdminPage = window.location.pathname.startsWith('/admin');
+    const isAdminPage = window.location.pathname.includes('/admin');
     const isLoginPage = window.location.pathname.includes('login');
 
     /**

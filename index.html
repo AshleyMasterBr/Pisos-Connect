@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pisos Connect</title>
     <meta name="description" content="O iFood dos pisos. Calcule, escolha e receba em casa.">
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0D0D1A">
     <style>
         body { background: #0D0D1A; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
@@ -43,7 +43,7 @@
                 const session = data?.session;
 
                 if (!session) {
-                    window.location.replace('/login.html');
+                    window.location.replace(CONFIG.rotas.login);
                     return;
                 }
 
@@ -54,13 +54,13 @@
                     .single();
 
                 if (perfil?.role === 'admin') {
-                    window.location.replace('/admin/index.html');
+                    window.location.replace(CONFIG.rotas.admin);
                 } else {
-                    window.location.replace('/app/home.html');
+                    window.location.replace(CONFIG.rotas.home);
                 }
             } catch (e) {
                 console.error('Router error:', e);
-                window.location.replace('/login.html');
+                window.location.replace(CONFIG.rotas.login);
             }
         })();
     </script>
