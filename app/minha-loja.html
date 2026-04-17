@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Parceiro — Pisos Connect</title>
+    <meta name="theme-color" content="#080812">
+    <link rel="stylesheet" href="/css/app.css">
+    <style>
+        body { padding-bottom: 80px; background: var(--bg); }
+        .page-header {
+            padding: 24px 18px 16px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .loja-hero {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--r-xl);
+            padding: 24px 18px;
+            margin: 0 18px 24px;
+            display: flex; flex-direction: column; align-items: center; gap: 16px;
+        }
+        
+        .avatar-upload {
+            width: 100px; height: 100px;
+            border-radius: 20px;
+            background: linear-gradient(145deg, #0d1a3a, #1a3a6b);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.2rem; font-weight: 800; color: #fff;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            border: 2px solid transparent;
+            transition: var(--tr);
+        }
+        .avatar-upload:hover { border-color: var(--primary); }
+        .avatar-upload img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .avatar-badge {
+            position: absolute; bottom: 4px; right: 4px;
+            background: var(--primary); width: 28px; height: 28px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+        }
+        
+        /* Oculta input file original */
+        #fileFoto { display: none; }
+
+        .loja-status {
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            border-radius: 999px;
+            text-transform: uppercase; letter-spacing: 1px; font-weight: 700;
+        }
+        .status-ativo { background: rgba(30,215,96,0.1); color: var(--success); }
+        .status-pendente { background: rgba(245,166,35,0.1); color: var(--gold); }
+
+        .section-tabs {
+            display: flex; gap: 10px; margin: 0 18px 20px;
+            border-bottom: 1px solid var(--border); padding-bottom: 10px;
+            overflow-x: auto;
+        }
+        .tab-btn {
+            background: transparent; color: var(--text-3);
+            border: none; font-size: 0.9rem; font-weight: 700; padding: 6px 12px;
+            cursor: pointer; position: relative; white-space: nowrap;
+        }
+        .tab-btn.ativo { color: var(--text-1); }
+        .tab-btn.ativo::after {
+            content: ''; position: absolute; bottom: -11px; left: 0; right: 0;
+            height: 2px; background: var(--primary); border-radius: 2px;
+        }
+
+        .tab-panel { display: none; padding: 0 18px; }
+        .tab-panel.ativo { display: block; animation: fadeSlide 0.3s ease; }
+
+        .list-item {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--r-l); padding: 14px 16px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<header class="page-header">
+    <h1 style="font-size:1.4rem;">Minha Loja</h1>
+    <button class="btn btn-ghost btn-sm" onclick="Auth.logout()" style="color:var(--primary);">
+        Sair
+    </button>
+</header>
+
+<main id="lojaApp" style="display:none;">
+    <!-- HERO / FOTO -->
+    <div class="loja-hero">
+        <label class="avatar-upload" id="avatarPreviewContainer" title="Alterar foto">
+            <input type="file" id="fileFoto" accept="image/png, image/jpeg, image/webp" onchange="subirFoto(event)">
+            <span id="avatarInitials">PC</span>
+            <div class="avatar-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </div>
+        </label>
+        
+        <div style="text-align:center;">
+            <div style="font-size:1.2rem;font-weight:800;margin-bottom:6px;" id="lblNomeEmpresa">Carregando...</div>
+            <div class="loja-status" id="lblStatus">Analise Pendente</div>
+            <p style="font-size:0.75rem;color:var(--text-3);margin-top:10px;">
+                Clique na imagem acima para atualizar sua foto de capa/logo.<br>Sua loja aparece para os clientes exatamente como você configurar aqui.
+            </p>
+        </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="section-tabs">
+        <button class="tab-btn ativo" onclick="mudarAba('perfil')" id="tab-perfil">Meu Perfil</button>
+        <button class="tab-btn" onclick="mudarAba('servicos')" id="tab-servicos" style="display:none;">Serviços</button>
+        <button class="tab-btn" onclick="mudarAba('produtos')" id="tab-produtos">Catálogo Privado</button>
+    </div>
+
+    <!-- TAB: Perfil -->
+    <div class="tab-panel ativo" id="panel-perfil">
+        <form onsubmit="salvarPerfil(event)">
+            <div class="form-group">
+                <label class="form-label">Nome da Empresa / Profissional</label>
+                <input type="text" class="form-control" id="fNome" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Descrição da vitrine</label>
+                <textarea class="form-control" id="fDesc" rows="4" style="resize:vertical;"></textarea>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <div class="form-group" style="flex:1;">
+                    <label class="form-label">WhatsApp</label>
+                    <input type="tel" class="form-control" id="fWhats" required>
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label class="form-label">Cidade</label>
+                    <input type="text" class="form-control" id="fCidade" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Site / Instagram</label>
+                <div class="form-control-icon">
+                    <span class="input-icon">🔗</span>
+                    <input type="text" class="form-control" id="fSite" placeholder="instagram.com/sua_loja">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full btn-lg" id="btnSalvarPerfil">Salvar Dados</button>
+        </form>
+    </div>
+
+    <!-- TAB: Serviços -->
+    <div class="tab-panel" id="panel-servicos">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <p style="font-size:0.8rem;color:var(--text-2);">Sua mão de obra e preço por m².</p>
+            <button class="btn btn-primary btn-sm" onclick="addServicoModal()">+ Serviço</button>
+        </div>
+        <div id="listaServicos"></div>
+        <div id="emptyServicos" style="display:none;text-align:center;padding:24px;border:1px dashed var(--border);border-radius:var(--r-m);color:var(--text-3);font-size:0.8rem;">
+            Você ainda não cadastrou serviços.
+        </div>
+    </div>
+
+    <!-- TAB: Produtos -->
+    <div class="tab-panel" id="panel-produtos">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <p style="font-size:0.8rem;color:var(--text-2);">Produtos que você fornece/vende.</p>
+            <button class="btn btn-primary btn-sm" onclick="addProdutoModal()">+ Produto</button>
+        </div>
+        <div id="listaProdutos"></div>
+        <div id="emptyProdutos" style="display:none;text-align:center;padding:24px;border:1px dashed var(--border);border-radius:var(--r-m);color:var(--text-3);font-size:0.8rem;">
+            Sua loja não tem produtos próprios cadastrados.
+        </div>
+    </div>
+
+</main>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/config.js"></script>
+<script src="/js/supabase.js"></script>
+<script src="/js/auth.js"></script>
+
+<script>
+    let _meuPerfil = null;
+    let _servicos = [];
+    let _produtos = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const session = await Auth.requireAuth();
+        if(!session) return;
+        
+        // Verifica se é profissional
+        const perfilAuth = await DB.getPerfil(session.user.id);
+        if(perfilAuth?.role !== 'profissional') {
+            window.location.replace('/app/home.html');
+            return;
+        }
+
+        await inicializarDashboard();
+    });
+
+    async function inicializarDashboard() {
+        try {
+            _meuPerfil = await DB.getMeuPerfil_Profissional();
+            if(!_meuPerfil) throw new Error("Perfil profissional não encontrado no banco.");
+
+            document.getElementById('lojaApp').style.display = 'block';
+            preencherUI(_meuPerfil);
+            
+            // Gerenciar as abas baseado no tipo
+            if(_meuPerfil.tipo === 'instalador') {
+                document.getElementById('tab-servicos').style.display = 'inline-block';
+            }
+
+            carregarServicos();
+            carregarProdutos();
+        } catch (e) {
+            console.error(e);
+            toast("Erro ao carregar dados.", "error");
+        }
+    }
+
+    function getIniciais(nome) {
+        if (!nome) return 'PC';
+        const p = nome.split(' ');
+        if (p.length >= 2 && p[1].length > 0) return (p[0][0] + p[1][0]).toUpperCase();
+        return p[0].substring(0, 2).toUpperCase();
+    }
+
+    function preencherUI(p) {
+        // Hero
+        document.getElementById('lblNomeEmpresa').textContent = p.nome_empresa;
+        const contAvatar = document.getElementById('avatarPreviewContainer');
+        if(p.logo_url) {
+            contAvatar.innerHTML = `<input type="file" id="fileFoto" accept="image/*" onchange="subirFoto(event)">
+                <img src="${p.logo_url}" alt="Logo">
+                <div class="avatar-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>`;
+        } else {
+            document.getElementById('avatarInitials').textContent = getIniciais(p.nome_empresa);
+        }
+
+        const stLabel = document.getElementById('lblStatus');
+        if(p.status === 'ativo') {
+            stLabel.textContent = "Vitrine Ativa";
+            stLabel.className = "loja-status status-ativo";
+        } else if(p.status === 'pendente') {
+            stLabel.textContent = "Em análise";
+            stLabel.className = "loja-status status-pendente";
+        } else {
+            stLabel.textContent = "Suspensa";
+        }
+
+        // Form
+        document.getElementById('fNome').value = p.nome_empresa || '';
+        document.getElementById('fDesc').value = p.descricao || '';
+        document.getElementById('fWhats').value = p.whatsapp || '';
+        document.getElementById('fCidade').value = p.cidade || '';
+        document.getElementById('fSite').value = p.site || '';
+    }
+
+    async function salvarPerfil(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnSalvarPerfil');
+        btn.disabled = true; btn.textContent = 'Salvando...';
+
+        try {
+            const up = {
+                id: _meuPerfil.id,
+                nome_empresa: document.getElementById('fNome').value,
+                descricao: document.getElementById('fDesc').value,
+                whatsapp: document.getElementById('fWhats').value,
+                cidade: document.getElementById('fCidade').value,
+                site: document.getElementById('fSite').value
+            };
+            const { error } = await DB.client.from('profissionais').update(up).eq('id', _meuPerfil.id);
+            if(error) throw error;
+            toast("Perfil atualizado!", "success");
+            _meuPerfil = {..._meuPerfil, ...up};
+            preencherUI(_meuPerfil);
+        } catch(err) {
+            toast("Erro ao salvar perfil.", "error");
+        } finally {
+            btn.disabled = false; btn.textContent = 'Salvar Dados';
+        }
+    }
+
+    async function subirFoto(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+
+        const max_mb = 3;
+        if(file.size > max_mb * 1024 * 1024) {
+            return toast("A imagem deve ter no máximo 3MB.", "error");
+        }
+
+        toast("Enviando foto...", "info");
+        try {
+            const ext = file.name.split('.').pop();
+            const fileName = `loja_${_meuPerfil.id}_${Date.now()}.${ext}`;
+            const publicUrl = await DB.uploadFotoLoja(file, fileName);
+            
+            await DB.atualizarFotoProfissional(_meuPerfil.id, publicUrl);
+            
+            _meuPerfil.logo_url = publicUrl;
+            preencherUI(_meuPerfil);
+            toast("Foto atualizada com sucesso! ✅", "success");
+        } catch(err) {
+            console.error(err);
+            toast("Falha no upload da foto.", "error");
+        }
+    }
+
+    // Abas
+    function mudarAba(aba) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('ativo'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('ativo'));
+        document.getElementById('tab-' + aba).classList.add('ativo');
+        document.getElementById('panel-' + aba).classList.add('ativo');
+    }
+
+    // ── Serviços
+    async function carregarServicos() {
+        if(_meuPerfil.tipo !== 'instalador') return;
+        _servicos = await DB.getServicosDoProfissional(_meuPerfil.id);
+        renderServicos();
+    }
+    
+    function renderServicos() {
+        const c = document.getElementById('listaServicos');
+        const empty = document.getElementById('emptyServicos');
+        if(!_servicos.length) { c.innerHTML=''; empty.style.display='block'; return; }
+        
+        empty.style.display='none';
+        c.innerHTML = _servicos.map(s => `
+        <div class="list-item">
+            <div>
+                <div style="font-weight:700;font-size:0.9rem;color:var(--text-1);">${s.nome}</div>
+                <div style="color:var(--text-3);font-size:0.75rem;">Mão de obra</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="font-family:var(--font-title);font-weight:800;color:var(--info);">R$ ${s.preco_m2.toFixed(2).replace('.',',')}/m²</div>
+            </div>
+        </div>`).join('');
+    }
+
+    function addServicoModal() {
+        const nome = prompt("Nome do serviço (ex: Instalação Vinílico):");
+        if(!nome) return;
+        const precoStr = prompt("Preço por m² (ex: 35.50):");
+        if(!precoStr) return;
+        
+        salvarNovoServico(nome, parseFloat(precoStr.replace(',','.')));
+    }
+    
+    async function salvarNovoServico(n, p) {
+        if(!p || p <= 0) return toast("Preço inválido.", "error");
+        try {
+            await DB.upsertServico({ profissional_id: _meuPerfil.id, nome: n, preco_m2: p });
+            toast("Serviço adicionado!", "success");
+            carregarServicos();
+        } catch(e) { toast("Erro.", "error"); }
+    }
+
+    // ── Produtos (Catálogo Privado)
+    async function carregarProdutos() {
+        // Pega só os produtos ligados a este perfil
+        const todos = await DB.getProdutosDoProfissional(_meuPerfil.id);
+        _produtos = todos;
+        renderProdutos();
+    }
+
+    function renderProdutos() {
+        const c = document.getElementById('listaProdutos');
+        const empty = document.getElementById('emptyProdutos');
+        if(!_produtos.length) { c.innerHTML=''; empty.style.display='block'; return; }
+        
+        empty.style.display='none';
+        c.innerHTML = _produtos.map(p => `
+        <div class="list-item">
+            <div>
+                <div style="font-weight:700;font-size:0.9rem;color:var(--text-1);">${p.nome}</div>
+                <div style="color:var(--text-3);font-size:0.75rem;text-transform:capitalize;">${p.tipo} • R$ ${p.preco_m2}/m²</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="delProduto('${p.id}')" style="color:var(--error);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+        </div>`).join('');
+    }
+
+    async function addProdutoModal() {
+        const nome = prompt("Nome completo do Produto (ex: Porcelanato Calacata):");
+        if(!nome) return;
+        const tipo = prompt("Tipo (vinilico, laminado, porcellanato, ceramico):");
+        if(!tipo) return;
+        const precoM2 = prompt("Preço por m² (R$):");
+        if(!precoM2) return;
+        const cx = prompt("Metros por caixa (m²):");
+        if(!cx) return;
+
+        try {
+            await DB.upsertProduto({
+                nome,
+                tipo: tipo.toLowerCase(),
+                preco_m2: parseFloat(precoM2.replace(',','.')),
+                m2_por_caixa: parseFloat(cx.replace(',','.')),
+                sku: 'LOJA-' + Date.now().toString().slice(-6),
+                profissional_id: _meuPerfil.id
+            });
+            toast("Produto adicionado!", "success");
+            carregarProdutos();
+        } catch(e) { toast("Erro ao cadastrar.", "error"); }
+    }
+
+    async function delProduto(id) {
+        if(!confirm("Tem certeza que quer remover este produto da sua vitrine?")) return;
+        try {
+            await DB.deletarProduto(id);
+            toast("Produto removido.", "success");
+            carregarProdutos();
+        } catch(e) { toast("Erro.", "error"); }
+    }
+
+    function toast(msg, tipo = 'info') {
+        const c = document.getElementById('toastContainer');
+        const el = document.createElement('div');
+        el.className = `toast toast-${tipo}`;
+        el.textContent = msg;
+        c.appendChild(el);
+        setTimeout(() => el.remove(), 4000);
+    }
+</script>
+</body>
+</html>

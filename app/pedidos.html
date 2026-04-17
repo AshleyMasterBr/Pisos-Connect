@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Pedidos — Pisos Connect</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0D0D1A">
+    <link rel="stylesheet" href="/css/app.css">
+    <style>
+        .pedido-itens { font-size:0.78rem; color:var(--text-3); margin-top:6px; line-height:1.6; }
+        .pedido-footer { display:flex; justify-content:space-between; align-items:center; margin-top:12px; }
+        .pedido-wpp {
+            font-size:0.78rem; color:var(--success); font-weight:600;
+            display:flex; align-items:center; gap:5px; cursor:pointer;
+            background:none; border:none; font-family:var(--font-body);
+        }
+        .pedido-wpp:hover { text-decoration:underline; }
+    </style>
+</head>
+<body>
+
+<header class="app-header">
+    <button class="header-back" onclick="history.back()">←</button>
+    <div class="header-title">Meus Pedidos</div>
+</header>
+
+<main class="page">
+    <div class="container">
+
+        <!-- Skeleton -->
+        <div id="skeletonPedidos">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-l);padding:18px;margin-bottom:12px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+                    <div class="skeleton" style="height:14px;width:100px;border-radius:4px;"></div>
+                    <div class="skeleton" style="height:20px;width:80px;border-radius:9999px;"></div>
+                </div>
+                <div class="skeleton" style="height:11px;margin-bottom:5px;border-radius:4px;"></div>
+                <div class="skeleton" style="height:11px;width:60%;border-radius:4px;"></div>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-l);padding:18px;margin-bottom:12px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+                    <div class="skeleton" style="height:14px;width:100px;border-radius:4px;"></div>
+                    <div class="skeleton" style="height:20px;width:80px;border-radius:9999px;"></div>
+                </div>
+                <div class="skeleton" style="height:11px;margin-bottom:5px;border-radius:4px;"></div>
+                <div class="skeleton" style="height:11px;width:60%;border-radius:4px;"></div>
+            </div>
+        </div>
+
+        <!-- Lista de pedidos -->
+        <div id="listaPedidos" style="display:none;"></div>
+
+        <!-- Empty state -->
+        <div class="empty-state" id="pedidosVazio" style="display:none;">
+            <div class="empty-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.3;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            </div>
+            <h3>Nenhum pedido ainda</h3>
+            <p>Quando você fizer um pedido, ele aparece aqui.</p>
+            <a href="/app/catalogo.html" class="btn btn-primary">Explorar catálogo</a>
+        </div>
+
+    </div>
+</main>
+
+<!-- Bottom Nav SVG -->
+<nav class="bottom-nav">
+    <a href="/app/home.html" class="nav-item">
+        <span class="nav-icon"><svg class="icon-home" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+        <span class="nav-label">Início</span>
+    </a>
+    <a href="/app/catalogo.html" class="nav-item">
+        <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="7" height="7"/><rect x="15" y="3" width="7" height="7"/><rect x="15" y="15" width="7" height="7"/><rect x="2" y="15" width="7" height="7"/></svg></span>
+        <span class="nav-label">Catálogo</span>
+    </a>
+    <a href="/app/profissionais.html" class="nav-item">
+        <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+        <span class="nav-label">Parceiros</span>
+    </a>
+    <a href="/app/sacola.html" class="nav-item">
+        <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
+        <span class="nav-label">Sacola</span>
+    </a>
+    <a href="/app/pedidos.html" class="nav-item ativo">
+        <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span>
+        <span class="nav-label">Pedidos</span>
+    </a>
+</nav>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/config.js"></script>
+<script src="/js/supabase.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+    const STATUS_LABEL = {
+        aguardando:  { label:'Aguardando', classe:'status-aguardando' },
+        confirmado:  { label:'Confirmado', classe:'status-confirmado'  },
+        em_entrega:  { label:'Em Entrega', classe:'status-em_entrega'  },
+        entregue:    { label:'Entregue',   classe:'status-entregue'    },
+        cancelado:   { label:'Cancelado',  classe:'status-cancelado'   }
+    };
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await Auth.requireAuth();
+        await carregarPedidos();
+    });
+
+    async function carregarPedidos() {
+        try {
+            const pedidos = await DB.getMeusPedidos();
+            document.getElementById('skeletonPedidos').remove();
+
+            if (!pedidos.length) {
+                document.getElementById('pedidosVazio').style.display = 'block';
+                return;
+            }
+
+            const lista = document.getElementById('listaPedidos');
+            lista.style.display = 'block';
+            lista.innerHTML = pedidos.map(p => {
+                const st = STATUS_LABEL[p.status] || STATUS_LABEL.aguardando;
+                const data = new Date(p.created_at).toLocaleDateString('pt-BR');
+                const hora = new Date(p.created_at).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+                const itensResumo = (p.pedido_itens || []).map(i => `${i.produto_nome} (${i.caixas}cx)`).join(', ');
+                const totalFmt = p.valor_total.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+
+                return `
+                <div class="pedido-card">
+                    <div class="pedido-header">
+                        <div>
+                            <div class="pedido-num">Pedido #${p.numero_pedido || p.id.slice(0,8).toUpperCase()}</div>
+                            <div class="pedido-data">${data} às ${hora}</div>
+                        </div>
+                        <span class="status-pill ${st.classe}">${st.label}</span>
+                    </div>
+                    <div class="pedido-itens">${itensResumo || 'Itens não disponíveis'}</div>
+                    <div class="pedido-footer">
+                        <div class="pedido-total">${totalFmt}</div>
+                        <button class="pedido-wpp" onclick="abrirWhatsApp('${p.id}', '${totalFmt.replace("'","")}')">
+                            Falar no WhatsApp
+                        </button>
+                    </div>
+                </div>`;
+            }).join('');
+
+        } catch(e) {
+            console.error(e);
+            document.getElementById('skeletonPedidos').innerHTML = '<p style="color:var(--text-3);text-align:center;padding:40px;">Erro ao carregar pedidos.</p>';
+        }
+    }
+
+    function abrirWhatsApp(pedidoId, total) {
+        const msg = `Olá! Estou entrando em contato sobre meu pedido (ID: ${pedidoId.slice(0,8).toUpperCase()}) — Total: ${total}. Pode me ajudar?`;
+        window.open(`https://wa.me/${CONFIG.empresa.whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    function toast(msg, tipo='info') {
+        const c = document.getElementById('toastContainer');
+        const el = document.createElement('div');
+        el.className = `toast toast-${tipo}`;
+        el.textContent = msg;
+        c.appendChild(el);
+        setTimeout(() => el.remove(), 3500);
+    }
+</script>
+</body>
+</html>

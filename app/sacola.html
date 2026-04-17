@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sacola — Pisos Connect</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0D0D1A">
+    <link rel="stylesheet" href="/css/app.css">
+    <style>
+        body { padding-bottom: 120px; }
+        .divider-line { height:1px; background:var(--border); margin:20px 0; }
+    </style>
+</head>
+<body>
+
+<header class="app-header">
+    <button class="header-back" onclick="history.back()">←</button>
+    <div class="header-title">Minha Sacola</div>
+    <button class="header-action btn-ghost" onclick="limparSacola()" title="Limpar sacola" style="font-size:0.75rem;color:var(--text-3);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+    </button>
+</header>
+
+<main class="page">
+    <div class="container">
+
+        <!-- Itens da sacola -->
+        <div id="itensSacola"></div>
+
+        <!-- Empty state -->
+        <div class="empty-state" id="sacolaVazia" style="display:none;">
+            <div class="empty-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.3;"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            </div>
+            <h3>Sacola vazia</h3>
+            <p>Adicione pisos do catálogo para continuar.</p>
+            <a href="/app/catalogo.html" class="btn btn-primary">Ver catálogo</a>
+        </div>
+
+        <!-- Resumo + Checkout (apenas se tiver itens) -->
+        <div id="checkoutSection" style="display:none;">
+
+            <!-- Total -->
+            <div class="sacola-total-box">
+                <div class="total-linha">
+                    <span>Subtotal</span>
+                    <span id="totalSubtotal">R$ 0,00</span>
+                </div>
+                <div class="total-linha">
+                    <span>Entrega</span>
+                    <span style="color:var(--success);">A combinar</span>
+                </div>
+                <div class="total-linha total-final">
+                    <span>Total estimado</span>
+                    <span id="totalFinal">R$ 0,00</span>
+                </div>
+            </div>
+
+            <!-- Badge COD -->
+            <div class="cod-badge">
+                <div class="cod-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="cod-texto">
+                    <strong>Pagamento na Entrega (COD)</strong>
+                    Sem necessidade de cartão agora. Pague só quando receber.
+                </div>
+            </div>
+
+            <!-- Form de dados do cliente -->
+            <div class="card mb-16">
+                <div class="card-body">
+                    <h3 style="margin-bottom:16px; font-size:1rem;">Dados de entrega</h3>
+                    <div class="form-group">
+                        <label class="form-label">Seu nome completo</label>
+                        <input type="text" class="form-control" id="clienteNome" placeholder="João Silva" autocomplete="name">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">WhatsApp (com DDD)</label>
+                        <input type="tel" class="form-control" id="clienteWhatsapp" placeholder="11999999999" autocomplete="tel">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Endereço de entrega</label>
+                        <input type="text" class="form-control" id="clienteEndereco"
+                            placeholder="Rua, número, bairro, cidade" autocomplete="street-address">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Observações -->
+            <div class="form-group mb-16">
+                <label class="form-label">Observações (opcional)</label>
+                <textarea class="form-control" id="clienteObs" rows="2"
+                    placeholder="Cor preferida, janela de horário, instrução de acesso..."
+                    style="resize:vertical;"></textarea>
+            </div>
+
+        </div><!-- /checkoutSection -->
+    </div>
+</main>
+
+<!-- Botão fixo de confirmação -->
+<div id="btnCheckoutFixed" style="
+    position:fixed; bottom:0; left:0; right:0;
+    background:rgba(13,13,26,0.97);
+    backdrop-filter:blur(16px);
+    border-top:1px solid var(--border);
+    padding:14px 18px;
+    z-index:800;
+    display:none;">
+    <button class="btn btn-success btn-full btn-lg" id="btnConfirmar" onclick="confirmarPedido()">
+        Confirmar pedido via WhatsApp
+    </button>
+</div>
+
+<!-- Bottom Nav SVG -->
+<nav class="bottom-nav">
+    <a href="/app/home.html" class="nav-item">
+        <span class="nav-icon"><svg class="icon-home" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+        <span class="nav-label">Início</span>
+    </a>
+    <a href="/app/catalogo.html" class="nav-item">
+        <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="7" height="7"/><rect x="15" y="3" width="7" height="7"/><rect x="15" y="15" width="7" height="7"/><rect x="2" y="15" width="7" height="7"/></svg></span>
+        <span class="nav-label">Catálogo</span>
+    </a>
+    <a href="/app/profissionais.html" class="nav-item">
+        <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+        <span class="nav-label">Parceiros</span>
+    </a>
+    <a href="/app/sacola.html" class="nav-item ativo">
+        <span class="nav-icon" style="position:relative;"><svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
+        <span class="nav-label">Sacola</span>
+    </a>
+    <a href="/app/pedidos.html" class="nav-item">
+        <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span>
+        <span class="nav-label">Pedidos</span>
+    </a>
+</nav>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/config.js"></script>
+<script src="/js/supabase.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+    const IMG_MAP = {
+        vinilico:'/assets/img/floor-vinilico.jpg',
+        porcellanato:'/assets/img/floor-porcellanato.jpg',
+        laminado:'/assets/img/floor-laminado.jpg',
+        ceramico:'/assets/img/floor-ceramico.jpg'
+    };
+    const BG_MAP = {
+        vinilico:'produto-thumb-bg-vinilico', porcellanato:'produto-thumb-bg-porcellanato',
+        laminado:'produto-thumb-bg-laminado', ceramico:'produto-thumb-bg-ceramico'
+    };
+
+    let _sacola = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await Auth.requireAuth();
+        // Pré-preenche dados do perfil
+        const perfil = await Auth.getPerfilAtual();
+        if (perfil) {
+            if (perfil.nome) document.getElementById('clienteNome').value = perfil.nome;
+            if (perfil.whatsapp) document.getElementById('clienteWhatsapp').value = perfil.whatsapp;
+            if (perfil.endereco) document.getElementById('clienteEndereco').value = perfil.endereco;
+        }
+        renderizarSacola();
+    });
+
+    function renderizarSacola() {
+        _sacola = JSON.parse(sessionStorage.getItem('pisos_sacola') || '[]');
+        const container = document.getElementById('itensSacola');
+        const empty = document.getElementById('sacolaVazia');
+        const checkout = document.getElementById('checkoutSection');
+        const btnFixed = document.getElementById('btnCheckoutFixed');
+
+        if (!_sacola.length) {
+            container.innerHTML = '';
+            empty.style.display = 'block';
+            checkout.style.display = 'none';
+            btnFixed.style.display = 'none';
+            return;
+        }
+
+        empty.style.display = 'none';
+        checkout.style.display = 'block';
+        btnFixed.style.display = 'block';
+
+        container.innerHTML = `
+            <h3 style="margin-bottom:14px;font-size:0.95rem;color:var(--text-2);">
+                ${_sacola.length} item${_sacola.length>1?'s':''} na sacola
+            </h3>
+            ${_sacola.map((item, idx) => {
+                const thumbStyle = IMG_MAP[item.tipo] ? `style="background-image:url('${IMG_MAP[item.tipo]}');background-size:cover;background-position:center;"` : '';
+                return `
+            <div class="sacola-item">
+                <div class="sacola-item-thumb ${BG_MAP[item.tipo]||''}" ${thumbStyle}></div>
+                <div class="sacola-item-info">
+                    <div class="sacola-item-nome">${item.produtoNome}</div>
+                    <div class="sacola-item-detalhe">
+                        ${item.area} m² → ${item.caixas} caixas (c/ 10% quebra)
+                    </div>
+                    <div class="sacola-item-preco mt-8">${item.subtotalFormatado}</div>
+                </div>
+                <button class="sacola-item-remove" onclick="removerItem(${idx})" title="Remover">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>`;
+            }).join('')}
+        `;
+
+        const total = _sacola.reduce((acc, i) => acc + i.subtotal, 0);
+        const totalFmt = total.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+        document.getElementById('totalSubtotal').textContent = totalFmt;
+        document.getElementById('totalFinal').textContent = totalFmt;
+    }
+
+    function removerItem(idx) {
+        _sacola.splice(idx, 1);
+        sessionStorage.setItem('pisos_sacola', JSON.stringify(_sacola));
+        renderizarSacola();
+        toast('Item removido', 'info');
+    }
+
+    function limparSacola() {
+        if (!_sacola.length) return;
+        if (!confirm('Limpar toda a sacola?')) return;
+        _sacola = [];
+        sessionStorage.removeItem('pisos_sacola');
+        renderizarSacola();
+    }
+
+    async function confirmarPedido() {
+        const nome = document.getElementById('clienteNome').value.trim();
+        const wpp  = document.getElementById('clienteWhatsapp').value.trim().replace(/\D/g,'');
+        const end  = document.getElementById('clienteEndereco').value.trim();
+        const obs  = document.getElementById('clienteObs').value.trim();
+
+        if (!nome) { toast('Informe seu nome.', 'error'); return; }
+        if (!wpp || wpp.length < 10) { toast('Informe um WhatsApp válido.', 'error'); return; }
+        if (!end) { toast('Informe o endereço de entrega.', 'error'); return; }
+
+        const btn = document.getElementById('btnConfirmar');
+        btn.disabled = true; btn.textContent = 'Registrando pedido...';
+
+        const total = _sacola.reduce((acc, i) => acc + i.subtotal, 0);
+        const totalFmt = total.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+
+        try {
+            // 1. Salvar no banco
+            const itens = _sacola.map(i => ({
+                produto_id: i.produtoId,
+                produto_nome: i.produtoNome,
+                area_m2: i.area,
+                caixas: i.caixas,
+                preco_m2: i.preco_m2,
+                subtotal: i.subtotal
+            }));
+
+            const pedido = await DB.criarPedido({
+                clienteNome: nome,
+                clienteWhatsapp: '55' + wpp,
+                enderecoEntrega: end,
+                valorTotal: total,
+                observacoes: obs
+            }, itens);
+
+            // 2. Gerar resumo para o WhatsApp
+            const resumoItens = _sacola.map(i => `• ${i.produtoNome} (${i.area}m² → ${i.caixas}cx): ${i.subtotalFormatado}`).join('\n');
+            const msgWpp = CONFIG.mensagemWhatsApp({
+                numero: pedido.numero_pedido || pedido.id?.slice(0,8).toUpperCase(),
+                resumo: resumoItens,
+                valorFormatado: totalFmt,
+                endereco: end
+            });
+
+            // 3. Limpar sacola
+            sessionStorage.removeItem('pisos_sacola');
+
+            // 4. Abrir WhatsApp
+            const link = `https://wa.me/${CONFIG.empresa.whatsapp}?text=${encodeURIComponent(msgWpp)}`;
+            window.open(link, '_blank');
+
+            // 5. Ir para pedidos
+            toast('Pedido registrado!', 'success');
+            setTimeout(() => window.location.replace('/app/pedidos.html'), 1200);
+
+        } catch(e) {
+            console.error(e);
+            toast('Erro ao registrar pedido. Tente novamente.', 'error');
+            btn.disabled = false; btn.textContent = 'Confirmar pedido via WhatsApp';
+        }
+    }
+
+    function toast(msg, tipo='info') {
+        const c = document.getElementById('toastContainer');
+        const el = document.createElement('div');
+        el.className = `toast toast-${tipo}`;
+        el.textContent = msg;
+        c.appendChild(el);
+        setTimeout(() => el.remove(), 3500);
+    }
+</script>
+</body>
+</html>

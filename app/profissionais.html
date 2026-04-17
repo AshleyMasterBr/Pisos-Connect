@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profissionais — Pisos Connect</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#080812">
+    <link rel="stylesheet" href="/css/app.css">
+    <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+    <style>
+        .prof-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .prof-full-card {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-l);
+            padding: 16px;
+            cursor: pointer;
+            transition: border-color var(--tr), transform 0.2s ease, box-shadow var(--tr);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+            animation: fadeSlide 0.3s ease both;
+        }
+        .prof-full-card:hover {
+            border-color: rgba(78,168,222,0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+        .prof-full-avatar {
+            width: 52px; height: 52px;
+            border-radius: var(--r-m);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem;
+            margin-bottom: 12px;
+        }
+        .prof-full-tipo {
+            font-size: 0.58rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.8px; color: var(--info); margin-bottom: 5px;
+        }
+        .prof-full-nome {
+            font-size: 0.88rem; font-weight: 700; line-height: 1.3;
+            margin-bottom: 5px;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .prof-full-cidade { font-size: 0.68rem; color: var(--text-3); }
+        .prof-destaque-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: 0.55rem; font-weight: 700; text-transform: uppercase;
+            background: rgba(245,166,35,0.15); color: var(--gold); border-radius: 4px;
+            padding: 2px 7px; margin-bottom: 6px;
+        }
+
+        /* Banner de cadastro de profissional */
+        .prof-cta-banner {
+            background: linear-gradient(135deg, rgba(78,168,222,0.08) 0%, rgba(78,168,222,0.03) 100%);
+            border: 1px solid rgba(78,168,222,0.2);
+            border-radius: var(--r-xl);
+            padding: 20px;
+            margin-bottom: 28px;
+            display: flex; gap: 14px; align-items: center;
+        }
+        .prof-cta-icon { font-size: 2rem; flex-shrink: 0; }
+        .prof-cta-title { font-size: 0.9rem; font-weight: 700; color: var(--info); margin-bottom: 4px; }
+        .prof-cta-sub { font-size: 0.76rem; color: var(--text-2); margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<header class="app-header">
+    <button class="header-back" onclick="history.back()">←</button>
+    <div class="header-title">Profissionais</div>
+</header>
+
+<main class="page">
+    <div class="container">
+
+        <!-- CTA para se cadastrar -->
+        <div class="prof-cta-banner">
+            <div class="prof-cta-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+            <div>
+                <div class="prof-cta-title">É um profissional?</div>
+                <div class="prof-cta-sub">Cadastre-se grátis e apareça para todos os clientes do Pisos Connect.</div>
+                <a href="/registro-profissional.html" class="btn btn-surface btn-sm">Quero ser parceiro →</a>
+            </div>
+        </div>
+
+        <!-- Filtros por tipo -->
+        <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:20px;scrollbar-width:none;">
+            <button class="btn-filtro ativo" onclick="setFiltro('todos', this)">Todos</button>
+            <button class="btn-filtro" onclick="setFiltro('loja', this)">Lojas</button>
+            <button class="btn-filtro" onclick="setFiltro('fabrica', this)">Fábricas</button>
+            <button class="btn-filtro" onclick="setFiltro('instalador', this)">Instaladores</button>
+        </div>
+
+        <!-- Contagem -->
+        <div style="font-size:0.75rem;color:var(--text-3);margin-bottom:16px;" id="countProfs"></div>
+
+        <div class="prof-grid" id="profGrid">
+            <!-- Skeletons de carregamento -->
+            <div class="prof-full-card">
+                <div class="prof-full-avatar skeleton" style="margin-bottom:12px;"></div>
+                <div class="skeleton" style="height:9px;width:50%;margin-bottom:6px;border-radius:4px;"></div>
+                <div class="skeleton" style="height:14px;margin-bottom:5px;border-radius:4px;"></div>
+                <div class="skeleton" style="height:10px;width:60%;border-radius:4px;"></div>
+            </div>
+            <div class="prof-full-card">
+                <div class="prof-full-avatar skeleton" style="margin-bottom:12px;"></div>
+                <div class="skeleton" style="height:9px;width:50%;margin-bottom:6px;border-radius:4px;"></div>
+                <div class="skeleton" style="height:14px;margin-bottom:5px;border-radius:4px;"></div>
+                <div class="skeleton" style="height:10px;width:60%;border-radius:4px;"></div>
+            </div>
+            <div class="prof-full-card">
+                <div class="prof-full-avatar skeleton" style="margin-bottom:12px;"></div>
+                <div class="skeleton" style="height:9px;width:50%;margin-bottom:6px;border-radius:4px;"></div>
+                <div class="skeleton" style="height:14px;margin-bottom:5px;border-radius:4px;"></div>
+                <div class="skeleton" style="height:10px;width:60%;border-radius:4px;"></div>
+            </div>
+            <div class="prof-full-card">
+                <div class="prof-full-avatar skeleton" style="margin-bottom:12px;"></div>
+                <div class="skeleton" style="height:9px;width:50%;margin-bottom:6px;border-radius:4px;"></div>
+                <div class="skeleton" style="height:14px;margin-bottom:5px;border-radius:4px;"></div>
+                <div class="skeleton" style="height:10px;width:60%;border-radius:4px;"></div>
+            </div>
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state" id="emptyProfs" style="display:none;">
+            <div class="empty-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+            <h3>Nenhum profissional aqui</h3>
+            <p>Tente outro filtro ou seja o primeiro desta categoria!</p>
+            <a href="/registro-profissional.html" class="btn btn-primary">Quero me cadastrar</a>
+        </div>
+
+    </div>
+</main>
+
+<!-- Bottom Nav com SVG -->
+<nav class="bottom-nav">
+    <a href="/app/home.html" class="nav-item">
+        <span class="nav-icon">
+            <svg class="icon-home" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </span>
+        <span class="nav-label">Início</span>
+    </a>
+    <a href="/app/catalogo.html" class="nav-item">
+        <span class="nav-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="7" height="7"/><rect x="15" y="3" width="7" height="7"/><rect x="15" y="15" width="7" height="7"/><rect x="2" y="15" width="7" height="7"/></svg>
+        </span>
+        <span class="nav-label">Catálogo</span>
+    </a>
+    <a href="/app/profissionais.html" class="nav-item ativo">
+        <span class="nav-icon">
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </span>
+        <span class="nav-label">Parceiros</span>
+    </a>
+    <a href="/app/sacola.html" class="nav-item">
+        <span class="nav-icon">
+            <svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        </span>
+        <span class="nav-label">Sacola</span>
+    </a>
+    <a href="/app/pedidos.html" class="nav-item">
+        <span class="nav-icon">
+            <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        </span>
+        <span class="nav-label">Pedidos</span>
+    </a>
+</nav>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/config.js"></script>
+<script src="/js/supabase.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+    const TIPO_ICON = {
+        loja:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
+        fabrica:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/></svg>',
+        instalador:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>'
+    };
+    const TIPO_BG   = { loja:'prof-avatar-loja', fabrica:'prof-avatar-fabrica', instalador:'prof-avatar-instalador' };
+    const TIPO_TAG  = { loja:'Loja de Pisos', fabrica:'Fábrica', instalador:'Instalador' };
+
+    let _todos = [];
+    let _filtro = 'todos';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await Auth.requireAuth();
+        await carregarProfissionais();
+    });
+
+    async function carregarProfissionais() {
+        try {
+            _todos = await DB.getProfissionais();
+            renderizar();
+        } catch(e) {
+            console.error(e);
+        }
+    }
+
+    function renderizar() {
+        const lista = _filtro === 'todos' ? _todos : _todos.filter(p => p.tipo === _filtro);
+        const grid = document.getElementById('profGrid');
+        const empty = document.getElementById('emptyProfs');
+        document.getElementById('countProfs').innerHTML = `<strong>${lista.length}</strong> profissional${lista.length !== 1 ? 'is' : ''} disponível${lista.length !== 1 ? 'is' : ''}`;
+
+        if (!lista.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+        empty.style.display = 'none';
+
+        grid.innerHTML = lista.map((p, i) => {
+            const initials = p.nome_empresa.split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase();
+            const TIPO_COLOR = { loja:'background:linear-gradient(135deg,#0d1a3a,#1a3a6b)', fabrica:'background:linear-gradient(135deg,#2a0d0d,#4a1818)', instalador:'background:linear-gradient(135deg,#0d1a0d,#1a3a1a)' };
+            const TIPO_TAG  = { loja:'Loja de Pisos', fabrica:'Fábrica', instalador:'Instalador' };
+            
+            let avatarHtml = `<div class="prof-full-avatar" style="${TIPO_COLOR[p.tipo] || ''};font-family:var(--font-title);font-size:1.2rem;font-weight:800;color:rgba(255,255,255,0.65);">${initials}</div>`;
+            if (p.logo_url) {
+                avatarHtml = `<img src="${p.logo_url}" class="prof-full-avatar" style="object-fit:cover;border:1px solid var(--border);" alt="Logo">`;
+            }
+
+            return `
+        <div class="prof-full-card" onclick="abrirProfissional('${p.id}')" style="animation-delay:${i * 50}ms">
+            ${avatarHtml}
+            ${p.destaque ? '<div class="prof-destaque-badge">Destaque</div>' : ''}
+            <div class="prof-full-tipo">${TIPO_TAG[p.tipo] || p.tipo}</div>
+            <div class="prof-full-nome">${p.nome_empresa}</div>
+            <div class="prof-full-cidade">⦿ ${p.cidade}</div>
+        </div>`;
+        }).join('');
+    }
+
+    function setFiltro(tipo, btn) {
+        _filtro = tipo;
+        document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('ativo'));
+        btn.classList.add('ativo');
+        renderizar();
+    }
+
+    function abrirProfissional(id) {
+        sessionStorage.setItem('profissionalId', id);
+        window.location.href = '/app/profissional.html';
+    }
+</script>
+</body>
+</html>

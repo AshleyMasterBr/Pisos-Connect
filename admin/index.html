@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — Pisos Connect Admin</title>
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="admin-sidebar">
+    <div class="sidebar-brand">
+        Pisos<span>Connect</span>
+        <div class="sidebar-brand-sub">Painel Admin</div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">Principal</div>
+        <a href="/admin/index.html" class="sidebar-link ativo">
+            <span class="link-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg></span> Dashboard
+        </a>
+        <a href="/admin/pedidos.html" class="sidebar-link">
+            <span class="link-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span> Pedidos
+            <span class="sidebar-badge" id="badgePedidos">0</span>
+        </a>
+        <div class="nav-section-label" style="margin-top:8px;">Configuração</div>
+        <a href="/admin/catalogo.html" class="sidebar-link">
+            <span class="link-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="7" height="7"/><rect x="15" y="3" width="7" height="7"/><rect x="15" y="15" width="7" height="7"/><rect x="2" y="15" width="7" height="7"/></svg></span> Catálogo
+        </a>
+        <a href="/admin/profissionais.html" class="sidebar-link">
+            <span class="link-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Profissionais
+            <span class="sidebar-badge" id="badgePendentes" style="display:none;">!</span>
+        </a>
+    </nav>
+    <div class="sidebar-footer">
+        <div class="sidebar-user">
+            <div class="sidebar-user-avatar" id="sidebarAvatar">A</div>
+            <div>
+                <div class="sidebar-user-nome" data-user-nome>Admin</div>
+                <div class="sidebar-user-role">Administrador</div>
+            </div>
+        </div>
+        <button class="sidebar-link" data-logout style="color:var(--primary);">
+            <span class="link-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span> Sair
+        </button>
+    </div>
+</aside>
+
+<!-- MAIN -->
+<main class="admin-main">
+    <div class="admin-topbar">
+        <div class="topbar-title">Dashboard</div>
+        <div class="topbar-actions">
+            <div style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:var(--text-3);">
+                <div class="realtime-dot"></div> Tempo real
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-content">
+
+        <!-- KPIs -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Pedidos hoje</div>
+                <div class="kpi-valor text-primary" id="kpiPedidosHoje">—</div>
+                <div class="kpi-delta" id="kpiPedidosDelta">Carregando...</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Aguardando Ação</div>
+                <div class="kpi-valor" style="color:var(--gold);" id="kpiAguardando">—</div>
+                <div class="kpi-delta">Precisam de ação</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Faturamento hoje</div>
+                <div class="kpi-valor" style="color:var(--success);" id="kpiFaturamento">—</div>
+                <div class="kpi-delta positivo" id="kpiFatDelta">R$ 0,00 total</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Total de pedidos</div>
+                <div class="kpi-valor" id="kpiTotal">—</div>
+                <div class="kpi-delta" id="kpiTotalDelta">Desde o início</div>
+            </div>
+        </div>
+
+        <!-- GRÁFICO DE FATURAMENTO SEMANAL -->
+        <div class="admin-table-wrap" style="margin-bottom:20px;">
+            <div class="table-header">
+                <h3>Faturamento — Últimas 4 Semanas</h3>
+                <div style="font-size:0.75rem;color:var(--text-3);display:flex;align-items:center;gap:6px;">
+                    <span id="fatTotal7d" style="color:var(--success);font-weight:700;"></span>
+                    <span>últimos 7 dias</span>
+                </div>
+            </div>
+            <div style="position:relative;height:220px;padding:0 8px 8px;">
+                <canvas id="chartFaturamento"></canvas>
+            </div>
+        </div>
+
+        <!-- Pedidos Recentes -->
+        <div class="admin-table-wrap">
+            <div class="table-header">
+                <h3>Pedidos Recentes</h3>
+                <a href="/admin/pedidos.html" class="btn btn-surface btn-sm">Ver todos →</a>
+            </div>
+            <div id="tabelaPedidosRecentes">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Pedido</th>
+                            <th>Cliente</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Data</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpoTabelaPedidos">
+                        <tr><td colspan="6" style="text-align:center;color:var(--text-3);padding:32px;">Carregando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Atalhos rápidos -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px;">
+            <a href="/admin/catalogo.html" style="
+                background:var(--surface); border:1px solid var(--border);
+                border-radius:var(--r-l); padding:18px; display:flex;
+                flex-direction:column; gap:8px; transition:var(--tr); cursor:pointer; text-decoration:none;">
+                <div style="color:var(--primary);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="7" height="7"/><rect x="15" y="3" width="7" height="7"/><rect x="15" y="15" width="7" height="7"/><rect x="2" y="15" width="7" height="7"/></svg></div>
+                <div style="font-weight:700;font-size:0.9rem;color:var(--text-1);">Gerenciar Catálogo</div>
+                <div style="font-size:0.75rem;color:var(--text-3);">Adicionar, editar ou remover produtos</div>
+            </a>
+            <a href="/admin/pedidos.html" style="
+                background:var(--surface); border:1px solid var(--border);
+                border-radius:var(--r-l); padding:18px; display:flex;
+                flex-direction:column; gap:8px; transition:var(--tr); cursor:pointer; text-decoration:none;">
+                <div style="color:var(--gold);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
+                <div style="font-weight:700;font-size:0.9rem;color:var(--text-1);">Painel de Pedidos</div>
+                <div style="font-size:0.75rem;color:var(--text-3);">Atualize status e acompanhe entregas</div>
+            </a>
+        </div>
+
+    </div>
+</main>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="/js/config.js"></script>
+<script src="/js/supabase.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+    const STATUS_MAP = {
+        aguardando: { label:'Aguardando', classe:'status-aguardando' },
+        confirmado: { label:'Confirmado', classe:'status-confirmado' },
+        em_entrega: { label:'Em Entrega', classe:'status-em_entrega' },
+        entregue:   { label:'Entregue',   classe:'status-entregue' },
+        cancelado:  { label:'Cancelado',  classe:'status-cancelado' }
+    };
+
+    let _chartInstance = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await Auth.requireAuth({ requireAdmin: true });
+        Auth.preencherNomeUsuario();
+        Auth.inicializarLogout();
+        await carregarDados();
+
+        DB.onNovoPedido(() => {
+            toast('Novo pedido recebido!', 'success');
+            carregarDados();
+        });
+    });
+
+    async function carregarDados() {
+        const [pedidos, profs] = await Promise.all([DB.getTodosPedidos(), DB.getTodosProfissionais()]);
+        const hoje = new Date().toLocaleDateString('pt-BR');
+
+        const pedidosHoje = pedidos.filter(p => new Date(p.created_at).toLocaleDateString('pt-BR') === hoje);
+        const aguardando  = pedidos.filter(p => p.status === 'aguardando');
+        const profPendentes = profs.filter(p => p.status === 'pendente');
+        const fatHoje     = pedidosHoje.reduce((a, p) => a + parseFloat(p.valor_total||0), 0);
+        const fatTotal    = pedidos.reduce((a, p) => a + parseFloat(p.valor_total||0), 0);
+
+        // KPIs
+        document.getElementById('kpiPedidosHoje').textContent = pedidosHoje.length;
+        document.getElementById('kpiPedidosDelta').textContent = `${pedidos.length} no total`;
+        document.getElementById('kpiAguardando').textContent = aguardando.length;
+        document.getElementById('kpiFaturamento').textContent = fatHoje.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+        document.getElementById('kpiFatDelta').textContent = fatTotal.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}) + ' total';
+        document.getElementById('kpiTotal').textContent = pedidos.length;
+
+        // Badges
+        document.getElementById('badgePedidos').textContent = aguardando.length;
+        document.getElementById('badgePedidos').style.display = aguardando.length ? 'inline-flex' : 'none';
+        document.getElementById('badgePendentes').textContent = profPendentes.length;
+        document.getElementById('badgePendentes').style.display = profPendentes.length ? 'inline-flex' : 'none';
+
+        // Chart
+        renderizarGrafico(pedidos);
+
+        // Tabela recentes
+        const recentes = pedidos.slice(0, 8);
+        const tbody = document.getElementById('corpoTabelaPedidos');
+        if (!recentes.length) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-3);padding:32px;">Nenhum pedido ainda.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = recentes.map(p => {
+            const st = STATUS_MAP[p.status] || STATUS_MAP.aguardando;
+            const data = new Date(p.created_at).toLocaleDateString('pt-BR');
+            const total = parseFloat(p.valor_total).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+            return `
+            <tr>
+                <td><span style="font-weight:700;">#${p.numero_pedido || p.id.slice(0,8).toUpperCase()}</span></td>
+                <td>${p.cliente_nome}</td>
+                <td><span style="color:var(--gold);font-weight:700;">${total}</span></td>
+                <td><span class="status-pill ${st.classe}">${st.label}</span></td>
+                <td style="color:var(--text-3);">${data}</td>
+                <td><a href="/admin/pedidos.html" class="btn btn-surface btn-sm">Gerenciar</a></td>
+            </tr>`;
+        }).join('');
+    }
+
+    function renderizarGrafico(pedidos) {
+        // gera labels das últimas 4 semanas (7 dias cada)
+        const hoje = new Date();
+        const semanas = [];
+        for (let s = 3; s >= 0; s--) {
+            const fim = new Date(hoje);
+            fim.setDate(hoje.getDate() - s * 7);
+            const ini = new Date(fim);
+            ini.setDate(fim.getDate() - 6);
+            semanas.push({ label: `${ini.getDate()}/${ini.getMonth()+1}–${fim.getDate()}/${fim.getMonth()+1}`, ini, fim });
+        }
+
+        const valores = semanas.map(({ ini, fim }) =>
+            pedidos
+                .filter(p => { const d = new Date(p.created_at); return d >= ini && d <= fim; })
+                .reduce((acc, p) => acc + parseFloat(p.valor_total || 0), 0)
+        );
+
+        // Subtotal últimos 7 dias
+        const fat7d = valores[valores.length - 1];
+        document.getElementById('fatTotal7d').textContent =
+            fat7d.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+
+        const labels = semanas.map(s => s.label);
+        const ctx = document.getElementById('chartFaturamento').getContext('2d');
+
+        if (_chartInstance) _chartInstance.destroy();
+
+        _chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Faturamento (R$)',
+                    data: valores,
+                    backgroundColor: [
+                        'rgba(233,69,96,0.15)',
+                        'rgba(233,69,96,0.25)',
+                        'rgba(233,69,96,0.45)',
+                        'rgba(233,69,96,0.85)'
+                    ],
+                    borderColor: [
+                        'rgba(233,69,96,0.4)',
+                        'rgba(233,69,96,0.6)',
+                        'rgba(233,69,96,0.8)',
+                        '#E94560'
+                    ],
+                    borderWidth: 2,
+                    borderRadius: 8,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ' ' + ctx.raw.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255,255,255,0.04)' },
+                        ticks: { color: '#888', font: { size: 11 } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(255,255,255,0.04)' },
+                        ticks: {
+                            color: '#888', font: { size: 11 },
+                            callback: v => 'R$' + v.toLocaleString('pt-BR')
+                        },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    function toast(msg, tipo='info') {
+        const c = document.getElementById('toastContainer');
+        const el = document.createElement('div');
+        el.className = `toast toast-${tipo}`;
+        el.textContent = msg;
+        c.appendChild(el);
+        setTimeout(() => el.remove(), 4000);
+    }
+</script>
+</body>
+</html>

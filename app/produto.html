@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produto — Pisos Connect</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0D0D1A">
+    <link rel="stylesheet" href="/css/app.css">
+    <style>
+        body { padding-bottom: 100px; }
+
+        .produto-hero {
+            height: 260px;
+            margin: 0 -18px 24px;
+            position: relative;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+        }
+        .produto-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, transparent 40%, rgba(8,8,18,0.85) 100%);
+        }
+
+        .produto-tag {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+
+        .produto-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+            line-height: 1.2;
+        }
+
+        .produto-descricao-full {
+            font-size: 0.88rem;
+            color: var(--text-2);
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+
+        .divider-line {
+            height: 1px;
+            background: var(--border);
+            margin: 20px 0;
+        }
+
+        /* Botão de adicionar — fixo no rodapé */
+        .produto-actions-fixed {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: rgba(13,13,26,0.97);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid var(--border);
+            padding: 14px 18px;
+            z-index: 800;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .produto-preco-fixo {
+            flex: 1;
+        }
+        .produto-preco-fixo .label {
+            font-size: 0.68rem;
+            color: var(--text-3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .produto-preco-fixo .valor {
+            font-family: var(--font-title);
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--gold);
+        }
+        .produto-preco-fixo .por-m2 {
+            font-size: 0.7rem;
+            color: var(--text-3);
+            font-family: var(--font-body);
+        }
+
+        /* Instrução de área */
+        .area-hint {
+            font-size: 0.72rem;
+            color: var(--text-3);
+            margin-top: 4px;
+            line-height: 1.5;
+        }
+
+        /* Animação do resultado */
+        .resultado-aparecer {
+            animation: fadeSlide 0.35s cubic-bezier(0.16,1,0.3,1);
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="app-header">
+    <button class="header-back" onclick="history.back()">←</button>
+    <div class="header-title" id="headerTitulo">Carregando...</div>
+    <a href="/app/sacola.html" class="header-action">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span class="badge-count" id="sacolaBadge" style="display:none;"></span>
+    </a>
+</header>
+
+<main class="page">
+    <div class="container" id="conteudoProduto">
+
+        <!-- Skeleton enquanto carrega -->
+        <div id="skeletonProduto">
+            <div class="skeleton" style="height:220px;margin:0 -18px 24px;border-radius:0;"></div>
+            <div class="skeleton" style="height:10px;width:40%;margin-bottom:8px;border-radius:4px;"></div>
+            <div class="skeleton" style="height:28px;margin-bottom:6px;border-radius:6px;"></div>
+            <div class="skeleton" style="height:14px;margin-bottom:4px;border-radius:4px;"></div>
+            <div class="skeleton" style="height:14px;width:70%;border-radius:4px;margin-bottom:20px;"></div>
+        </div>
+
+        <!-- Conteúdo do produto (preenchido via JS) -->
+        <div id="produtoConteudo" style="display:none;">
+
+            <!-- Hero visual -->
+            <div class="produto-hero" id="produtoHero"></div>
+
+            <!-- Info -->
+            <div class="produto-tag" id="produtoTag"></div>
+            <h1 class="produto-title" id="produtoTitulo"></h1>
+            <p class="produto-descricao-full" id="produtoDescricao"></p>
+
+            <!-- Meta chips -->
+            <div class="produto-meta">
+                <div class="meta-chip">
+                    <div class="meta-chip-label">Preço / m²</div>
+                    <div class="meta-chip-valor text-gold" id="metaPreco">—</div>
+                </div>
+                <div class="meta-chip">
+                    <div class="meta-chip-label">Caixa cobre</div>
+                    <div class="meta-chip-valor" id="metaCaixa">—</div>
+                </div>
+                <div class="meta-chip">
+                    <div class="meta-chip-label">Fornecedor</div>
+                    <div class="meta-chip-valor" id="metaFornecedor">—</div>
+                </div>
+            </div>
+
+            <div class="divider-line"></div>
+
+            <!-- CALCULADORA DE CUBAGEM -->
+            <div class="calc-section">
+                <div class="calc-section-title">Calcule sua área</div>
+                <p class="area-hint">Informe a metragem do ambiente. Já incluímos <strong style="color:var(--primary)">10% de quebra técnica</strong> no cálculo.</p>
+
+                <div class="calc-area-input mt-8">
+                    <div class="form-group">
+                        <label class="form-label">Área do ambiente</label>
+                        <div class="form-control-icon">
+                            <span class="input-icon" style="font-size:0.75rem;font-weight:700;color:var(--primary);">m²</span>
+                            <input type="number" class="form-control" id="areaInput"
+                                placeholder="Ex: 45" min="1" max="9999" step="0.1"
+                                style="padding-left:42px;"
+                                oninput="calcularArea()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resultado do cálculo -->
+                <div class="calc-resultado" id="calcResultado">
+                    <div class="resultado-preco" id="resultadoPreco">R$ 0,00</div>
+                    <div class="resultado-chips">
+                        <div class="resultado-chip">
+                            <strong id="resultadoCaixas">0</strong> caixas
+                        </div>
+                        <div class="resultado-chip">
+                            <strong id="resultadoAreaComQuebra">0</strong> m² (c/ quebra)
+                        </div>
+                        <div class="resultado-chip">
+                            R$ <strong id="resultadoPrecoCaixa">0</strong> / cx
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-full" id="btnAdicionarSacola" onclick="adicionarSacola()">
+                        + Adicionar à Sacola
+                    </button>
+                </div>
+
+            </div>
+
+            <div class="divider-line"></div>
+
+            <!-- Garantias -->
+            <div style="margin-bottom:24px;">
+                <div style="font-size:0.85rem;font-weight:700;margin-bottom:14px;color:var(--text-2);text-transform:uppercase;letter-spacing:0.6px;">Garantias</div>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <div style="display:flex;gap:12px;align-items:center;font-size:0.85rem;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span><strong>Pagamento na entrega</strong> — você só paga quando receber</span>
+                    </div>
+                    <div style="display:flex;gap:12px;align-items:center;font-size:0.85rem;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--info)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                        <span><strong>10% de quebra incluso</strong> — nunca faltará piso</span>
+                    </div>
+                    <div style="display:flex;gap:12px;align-items:center;font-size:0.85rem;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        <span><strong>Suporte via WhatsApp</strong> — tiramos dúvidas na hora</span>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /produtoConteudo -->
+    </div>
+</main>
+
+<!-- Rodapé fixo com preço e CTA -->
+<div class="produto-actions-fixed" id="produtoActionsFixed" style="display:none;">
+    <div class="produto-preco-fixo">
+        <div class="label">A partir de</div>
+        <div class="valor" id="precoFixado">R$ 0,00</div>
+        <div class="por-m2">por m²</div>
+    </div>
+    <button class="btn btn-primary btn-lg" onclick="focarCalculadora()">
+        Calcular
+    </button>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/config.js"></script>
+<script src="/js/calculadora.js"></script>
+<script src="/js/supabase.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+    const IMG_MAP = {
+        vinilico:'/assets/img/floor-vinilico.jpg',
+        porcellanato:'/assets/img/floor-porcellanato.jpg',
+        laminado:'/assets/img/floor-laminado.jpg',
+        ceramico:'/assets/img/floor-ceramico.jpg'
+    };
+    const BG_MAP = {
+        vinilico:'produto-thumb-bg-vinilico', porcellanato:'produto-thumb-bg-porcellanato',
+        laminado:'produto-thumb-bg-laminado', ceramico:'produto-thumb-bg-ceramico'
+    };
+    const TIPO_LABEL = { vinilico:'Vinílico', porcellanato:'Porcelanato', laminado:'Laminado', ceramico:'Cerâmico' };
+
+    let _produto = null;
+    let _resultadoCalc = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await Auth.requireAuth();
+        atualizarBadgeSacola();
+        const id = sessionStorage.getItem('produtoId');
+        if (!id) { window.location.replace('/app/catalogo.html'); return; }
+        await carregarProduto(id);
+    });
+
+    async function carregarProduto(id) {
+        try {
+            _produto = await DB.getProduto(id);
+            renderizarProduto(_produto);
+        } catch(e) {
+            console.error(e);
+            toast('Produto não encontrado.', 'error');
+            setTimeout(() => history.back(), 1500);
+        }
+    }
+
+    function renderizarProduto(p) {
+        document.getElementById('skeletonProduto').remove();
+        document.getElementById('produtoConteudo').style.display = 'block';
+        document.getElementById('produtoActionsFixed').style.display = 'flex';
+
+        document.title = p.nome + ' — Pisos Connect';
+        document.getElementById('headerTitulo').textContent = p.nome;
+
+        // Hero — foto real do piso
+        const img = IMG_MAP[p.tipo];
+        const hero = document.getElementById('produtoHero');
+        hero.className = `produto-hero ${BG_MAP[p.tipo] || ''}`;
+        if (img) hero.style.backgroundImage = `url('${img}')`;
+        hero.style.backgroundSize = 'cover';
+        hero.style.backgroundPosition = 'center';
+        hero.innerHTML = p.destaque ? `<span class="produto-hero-badge" style="z-index:1;">Destaque</span>` : '';
+
+        // Info
+        document.getElementById('produtoTag').textContent = TIPO_LABEL[p.tipo] || p.tipo;
+        document.getElementById('produtoTitulo').textContent = p.nome;
+        document.getElementById('produtoDescricao').textContent = p.descricao || 'Produto disponível para encomenda direto pelo app.';
+
+        // Meta
+        document.getElementById('metaPreco').textContent = 'R$ ' + p.preco_m2.toFixed(2).replace('.',',');
+        document.getElementById('metaCaixa').textContent = p.m2_por_caixa + ' m²';
+        document.getElementById('metaFornecedor').textContent = p.fornecedor || '—';
+
+        // Fixo
+        document.getElementById('precoFixado').textContent = 'R$ ' + p.preco_m2.toFixed(2).replace('.',',');
+    }
+
+    function calcularArea() {
+        if (!_produto) return;
+        const val = document.getElementById('areaInput').value;
+        const { valido, area } = Calculadora.validarArea(val);
+        const resultadoEl = document.getElementById('calcResultado');
+
+        if (!valido || !val) {
+            resultadoEl.classList.remove('visivel');
+            return;
+        }
+
+        const res = Calculadora.calcular(area, _produto);
+        _resultadoCalc = res;
+
+        document.getElementById('resultadoPreco').textContent = res.valorFormatado;
+        document.getElementById('resultadoCaixas').textContent = res.caixas;
+        document.getElementById('resultadoAreaComQuebra').textContent = res.areaComQuebra;
+        document.getElementById('resultadoPrecoCaixa').textContent = res.precoPorCaixa.toFixed(2).replace('.',',');
+
+        resultadoEl.classList.add('visivel');
+        resultadoEl.classList.add('resultado-aparecer');
+    }
+
+    function adicionarSacola() {
+        if (!_resultadoCalc) return;
+        const sacola = JSON.parse(sessionStorage.getItem('pisos_sacola') || '[]');
+
+        // Verifica se já está na sacola
+        const existente = sacola.findIndex(i => i.produtoId === _produto.id);
+        const item = {
+            produtoId: _produto.id,
+            produtoNome: _produto.nome,
+            tipo: _produto.tipo,
+            area: _resultadoCalc.area,
+            caixas: _resultadoCalc.caixas,
+            preco_m2: _produto.preco_m2,
+            m2_por_caixa: _produto.m2_por_caixa,
+            subtotal: _resultadoCalc.valorTotal,
+            subtotalFormatado: _resultadoCalc.valorFormatado
+        };
+
+        if (existente >= 0) {
+            sacola[existente] = item;
+            toast('Sacola atualizada!', 'info');
+        } else {
+            sacola.push(item);
+            toast('Adicionado à sacola!', 'success');
+        }
+
+        sessionStorage.setItem('pisos_sacola', JSON.stringify(sacola));
+        atualizarBadgeSacola();
+
+        // Anima o botão
+        const btn = document.getElementById('btnAdicionarSacola');
+        btn.textContent = 'Adicionado!';
+        setTimeout(() => { btn.textContent = '+ Adicionar à Sacola'; }, 2000);
+    }
+
+    function focarCalculadora() {
+        document.getElementById('areaInput').focus();
+        document.getElementById('areaInput').scrollIntoView({ behavior:'smooth', block:'center' });
+    }
+
+    function atualizarBadgeSacola() {
+        const sacola = JSON.parse(sessionStorage.getItem('pisos_sacola') || '[]');
+        const badge = document.getElementById('sacolaBadge');
+        badge.style.display = sacola.length ? 'flex' : 'none';
+        badge.textContent = sacola.length;
+    }
+
+    function toast(msg, tipo='info') {
+        const c = document.getElementById('toastContainer');
+        const el = document.createElement('div');
+        el.className = `toast toast-${tipo}`;
+        el.textContent = msg;
+        c.appendChild(el);
+        setTimeout(() => el.remove(), 3000);
+    }
+</script>
+</body>
+</html>

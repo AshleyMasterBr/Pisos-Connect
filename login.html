@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrar — Pisos Connect</title>
+    <meta name="description" content="Acesse sua conta Pisos Connect.">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0D0D1A">
+    <link rel="stylesheet" href="/css/app.css">
+    <style>
+        body { min-height: 100vh; padding-bottom: 0; display: flex; flex-direction: column; }
+
+        .login-page {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 18px 40px;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Fundo com gradiente animado */
+        .login-page::before {
+            content: '';
+            position: absolute;
+            top: -30%; left: -20%;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(233,69,96,0.12) 0%, transparent 65%);
+            animation: drift 8s ease-in-out infinite alternate;
+            pointer-events: none;
+        }
+        .login-page::after {
+            content: '';
+            position: absolute;
+            bottom: -10%; right: -20%;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(245,166,35,0.08) 0%, transparent 65%);
+            animation: drift 10s ease-in-out infinite alternate-reverse;
+            pointer-events: none;
+        }
+        @keyframes drift {
+            from { transform: translate(0, 0); }
+            to   { transform: translate(30px, 20px); }
+        }
+
+        .login-wrap {
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-brand {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .login-brand-logo {
+            font-family: var(--font-title);
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+        .login-brand-logo span { color: var(--primary); }
+        .login-brand-tag {
+            font-size: 0.82rem;
+            color: var(--text-3);
+        }
+
+        .login-card {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-xl);
+            padding: 28px 24px;
+        }
+
+        /* Estados dos painéis */
+        .panel { display: none; }
+        .panel.ativo { display: block; animation: fadeSlide 0.3s ease; }
+
+        /* OTP input */
+        .otp-input {
+            letter-spacing: 8px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: var(--font-title);
+            text-align: center;
+        }
+
+        /* Telefone com bandeira */
+        .phone-input-wrap { display: flex; gap: 8px; }
+        .phone-ddi {
+            width: 72px;
+            flex-shrink: 0;
+            text-align: center;
+            background: var(--surface-2);
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-m);
+            color: var(--text-1);
+            font-size: 0.9rem;
+            font-family: var(--font-body);
+            padding: 13px 8px;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: var(--text-3);
+        }
+        .login-footer a {
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Cadastro overlay */
+        .cadastro-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.82rem;
+            color: var(--text-3);
+        }
+        .cadastro-link span {
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .cadastro-link span:hover { text-decoration: underline; }
+
+        /* Rodapé da página de login */
+        .login-terms {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 0.72rem;
+            color: var(--text-3);
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-page">
+    <div class="login-wrap">
+
+        <!-- Brand -->
+        <div class="login-brand">
+            <div class="login-brand-logo">Pisos<span>Connect</span></div>
+            <div class="login-brand-tag">O piso certo. Na hora certa. Na sua porta.</div>
+        </div>
+
+        <!-- Card de Login -->
+        <div class="login-card" id="painelLogin">
+
+            <!-- Tabs de método de login -->
+            <div class="tabs" role="tablist">
+                <button class="tab-btn ativo" onclick="mudarAba('email')" id="tab-email">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Email
+                </button>
+                <button class="tab-btn" onclick="mudarAba('magic')" id="tab-magic">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Link Mágico
+                </button>
+                <button class="tab-btn" onclick="mudarAba('phone')" id="tab-phone">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>SMS
+                </button>
+            </div>
+
+            <!-- ABA: Email + Senha -->
+            <div class="tab-panel ativo" id="panel-email">
+                <form id="formEmail" onsubmit="loginComEmail(event)">
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <div class="form-control-icon">
+                        <span class="input-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
+                            <input type="email" class="form-control" id="emailInput"
+                                placeholder="seu@email.com" autocomplete="email" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Senha</label>
+                        <div class="form-control-icon">
+                            <span class="input-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                            <input type="password" class="form-control" id="senhaInput"
+                                placeholder="Sua senha" autocomplete="current-password" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full btn-lg" id="btnEmail">
+                        Entrar
+                    </button>
+                </form>
+            </div>
+
+            <!-- ABA: Magic Link -->
+            <div class="tab-panel" id="panel-magic">
+                <p style="font-size:0.85rem; color:var(--text-2); margin-bottom:16px;">
+                    Enviaremos um link seguro para seu email. Sem senha necessária.
+                </p>
+                <form id="formMagic" onsubmit="loginMagicLink(event)">
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <div class="form-control-icon">
+                        <span class="input-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
+                            <input type="email" class="form-control" id="magicEmailInput"
+                                placeholder="seu@email.com" autocomplete="email" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full btn-lg" id="btnMagic">
+                        Enviar Link de Acesso
+                    </button>
+                </form>
+            </div>
+
+            <!-- ABA: Telefone + OTP -->
+            <div class="tab-panel" id="panel-phone">
+                <!-- Step 1: pedir número -->
+                <div id="phoneStep1">
+                    <p style="font-size:0.85rem; color:var(--text-2); margin-bottom:16px;">
+                        Enviaremos um código SMS de 6 dígitos.
+                    </p>
+                    <form id="formPhone" onsubmit="enviarOTP(event)">
+                        <div class="form-group">
+                            <label class="form-label">Telefone (WhatsApp)</label>
+                            <div class="phone-input-wrap">
+                                <select class="phone-ddi" id="phoneDDI">
+                                    <option value="+55">🇧🇷 +55</option>
+                                    <option value="+1">🇺🇸 +1</option>
+                                    <option value="+351">🇵🇹 +351</option>
+                                </select>
+                                <input type="tel" class="form-control" id="phoneInput"
+                                    placeholder="11999999999" autocomplete="tel" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full btn-lg" id="btnPhone">
+                            Enviar Código SMS
+                        </button>
+                    </form>
+                </div>
+                <!-- Step 2: confirmar OTP -->
+                <div id="phoneStep2" style="display:none;">
+                    <p style="font-size:0.85rem; color:var(--text-2); margin-bottom:4px;">
+                        Digite o código enviado para
+                    </p>
+                    <p style="font-weight:700; color:var(--text-1); margin-bottom:20px;" id="phoneExibido"></p>
+                    <form id="formOTP" onsubmit="confirmarOTP(event)">
+                        <div class="form-group">
+                            <label class="form-label">Código SMS</label>
+                            <input type="text" class="form-control otp-input" id="otpInput"
+                                placeholder="000000" maxlength="6" inputmode="numeric" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full btn-lg" id="btnOTP">
+                            Verificar Código
+                        </button>
+                    </form>
+                    <button class="btn btn-ghost btn-full mt-8" onclick="voltarPhone()" style="font-size:0.85rem;">
+                        ← Usar outro número
+                    </button>
+                </div>
+            </div>
+
+        </div><!-- /login-card -->
+
+        <!-- Painel de Cadastro (separado) -->
+        <div class="login-card" id="painelCadastro" style="display:none;">
+            <h3 style="margin-bottom:4px;">Criar conta</h3>
+            <p style="font-size:0.82rem; color:var(--text-3); margin-bottom:20px;">Tudo grátis. Sem taxas de assinatura.</p>
+            <form id="formCadastro" onsubmit="cadastrar(event)">
+                <div class="form-group">
+                    <label class="form-label">Seu nome</label>
+                    <div class="form-control-icon">
+                        <span class="input-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                        <input type="text" class="form-control" id="cadNome" placeholder="João Silva" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <div class="form-control-icon">
+                        <span class="input-icon">✉️</span>
+                        <input type="email" class="form-control" id="cadEmail" placeholder="seu@email.com" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">WhatsApp</label>
+                    <div class="form-control-icon">
+                        <span class="input-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></span>
+                        <input type="tel" class="form-control" id="cadWhatsapp" placeholder="11999999999" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Senha (mínimo 6 caracteres)</label>
+                    <div class="form-control-icon">
+                        <span class="input-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                        <input type="password" class="form-control" id="cadSenha" placeholder="••••••••" minlength="6" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full btn-lg" id="btnCadastro">
+                    Criar minha conta
+                </button>
+            </form>
+            <div class="login-footer" style="margin-top:16px;">
+                Já tem conta? <a onclick="mostrarLogin()">Entrar</a>
+            </div>
+        </div>
+
+        <!-- Link cadastro / login -->
+        <div class="cadastro-link" id="linkCadastro">
+            Não tem conta? <span onclick="mostrarCadastro()">Criar agora, é grátis</span>
+        </div>
+        <div class="cadastro-link" id="linkLogin" style="display:none;">
+            Já tem conta? <span onclick="mostrarLogin()">Entrar</span>
+        </div>
+
+        <div class="login-terms">
+            Ao continuar, você concorda com os termos de uso e política de privacidade do Pisos Connect.
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/config.js"></script>
+<script src="/js/supabase.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+    let _telefoneAtual = '';
+
+    // Redireciona se já logado
+    document.addEventListener('DOMContentLoaded', () => Auth.redirectIfLogged());
+
+    // ── TABS ────────────────────────────────────────────────
+    function mudarAba(aba) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('ativo'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('ativo'));
+        document.getElementById('tab-' + aba).classList.add('ativo');
+        document.getElementById('panel-' + aba).classList.add('ativo');
+    }
+
+    // ── ALTERNÂNCIA LOGIN / CADASTRO ────────────────────────
+    function mostrarCadastro() {
+        document.getElementById('painelLogin').style.display = 'none';
+        document.getElementById('painelCadastro').style.display = 'block';
+        document.getElementById('linkCadastro').style.display = 'none';
+        document.getElementById('linkLogin').style.display = 'block';
+    }
+    function mostrarLogin() {
+        document.getElementById('painelLogin').style.display = 'block';
+        document.getElementById('painelCadastro').style.display = 'none';
+        document.getElementById('linkCadastro').style.display = 'block';
+        document.getElementById('linkLogin').style.display = 'none';
+    }
+
+    // ── LOGIN EMAIL ──────────────────────────────────────────
+    async function loginComEmail(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnEmail');
+        setLoading(btn, true, 'Entrando...');
+        try {
+            await DB.loginEmail(
+                document.getElementById('emailInput').value,
+                document.getElementById('senhaInput').value
+            );
+            toast('Bem-vindo de volta!', 'success');
+            setTimeout(() => window.location.replace(CONFIG.rotas.home), 800);
+        } catch (err) {
+            toast(traduzirErro(err.message), 'error');
+        } finally {
+            setLoading(btn, false, 'Entrar');
+        }
+    }
+
+    // ── MAGIC LINK ────────────────────────────────────────────
+    async function loginMagicLink(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnMagic');
+        setLoading(btn, true, 'Enviando...');
+        try {
+            await DB.loginMagicLink(document.getElementById('magicEmailInput').value);
+            toast('Link enviado! Verifique seu email 📬', 'success');
+        } catch (err) {
+            toast(traduzirErro(err.message), 'error');
+        } finally {
+            setLoading(btn, false, 'Enviar Link de Acesso');
+        }
+    }
+
+    // ── OTP / SMS ─────────────────────────────────────────────
+    async function enviarOTP(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnPhone');
+        const ddi = document.getElementById('phoneDDI').value;
+        const num = document.getElementById('phoneInput').value.replace(/\D/g,'');
+        _telefoneAtual = ddi + num;
+        setLoading(btn, true, 'Enviando SMS...');
+        try {
+            await DB.loginTelefone(_telefoneAtual);
+            document.getElementById('phoneStep1').style.display = 'none';
+            document.getElementById('phoneStep2').style.display = 'block';
+            document.getElementById('phoneExibido').textContent = _telefoneAtual;
+            document.getElementById('otpInput').focus();
+        } catch (err) {
+            toast(traduzirErro(err.message), 'error');
+        } finally {
+            setLoading(btn, false, 'Enviar Código SMS');
+        }
+    }
+
+    async function confirmarOTP(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnOTP');
+        setLoading(btn, true, 'Verificando...');
+        try {
+            await DB.verificarOTP(_telefoneAtual, document.getElementById('otpInput').value);
+            toast('Autenticado com sucesso!', 'success');
+            setTimeout(() => window.location.replace(CONFIG.rotas.home), 800);
+        } catch (err) {
+            toast(traduzirErro(err.message), 'error');
+        } finally {
+            setLoading(btn, false, 'Verificar Código');
+        }
+    }
+
+    function voltarPhone() {
+        document.getElementById('phoneStep1').style.display = 'block';
+        document.getElementById('phoneStep2').style.display = 'none';
+        _telefoneAtual = '';
+    }
+
+    // ── CADASTRO ─────────────────────────────────────────────
+    async function cadastrar(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnCadastro');
+        setLoading(btn, true, 'Criando conta...');
+        try {
+            await DB.cadastrar(
+                document.getElementById('cadEmail').value,
+                document.getElementById('cadSenha').value,
+                document.getElementById('cadNome').value,
+                document.getElementById('cadWhatsapp').value
+            );
+            toast('Conta criada! Verifique seu email para confirmar.', 'success');
+            setTimeout(() => mostrarLogin(), 1500);
+        } catch (err) {
+            toast(traduzirErro(err.message), 'error');
+        } finally {
+            setLoading(btn, false, 'Criar minha conta');
+        }
+    }
+
+    // ── UTILS ─────────────────────────────────────────────────
+    function setLoading(btn, loading, texto) {
+        btn.disabled = loading;
+        btn.textContent = loading ? texto + '...' : texto;
+    }
+
+    function traduzirErro(msg) {
+        const erros = {
+            'Invalid login credentials': 'Email ou senha incorretos.',
+            'Email not confirmed': 'Confirme seu email antes de entrar.',
+            'User already registered': 'Este email já está cadastrado.',
+            'Phone not confirmed': 'Confirme seu telefone.',
+            'Invalid OTP': 'Código inválido. Tente novamente.',
+            'Too many requests': 'Muitas tentativas. Aguarde alguns minutos.'
+        };
+        return erros[msg] || msg || 'Algo deu errado. Tente novamente.';
+    }
+
+    function toast(msg, tipo = 'info') {
+        const container = document.getElementById('toastContainer');
+        const el = document.createElement('div');
+        el.className = `toast toast-${tipo}`;
+        el.textContent = msg;
+        container.appendChild(el);
+        setTimeout(() => el.remove(), 3500);
+    }
+</script>
+</body>
+</html>

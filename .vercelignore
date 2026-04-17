@@ -1,0 +1,10 @@
+# Arquivos de banco de dados (não vão pro deploy)
+*.sql
+
+# Arquivos de dev local
+.env
+.env.local
+
+# Sistema
+.DS_Store
+Thumbs.db

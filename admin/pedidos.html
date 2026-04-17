@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedidos — Pisos Connect Admin</title>
+    <link rel="stylesheet" href="/css/admin.css">
+    <style>
+        .filtros-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .filtros-bar input,
+        .filtros-bar select {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-m);
+            color: var(--text-1);
+            font-family: var(--font-body);
+            font-size: 0.85rem;
+            padding: 8px 12px;
+        }
+        .filtros-bar input { flex: 1; min-width: 160px; }
+        .filtros-bar select { min-width: 140px; }
+        .filtros-bar input:focus,
+        .filtros-bar select:focus { outline: none; border-color: var(--primary); }
+        .export-bar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 16px;
+        }
+        .view-toggles {
+            display: flex;
+            gap: 6px;
+        }
+        .view-btn {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-m);
+            color: var(--text-3);
+            padding: 6px 14px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: var(--tr);
+        }
+        .view-btn.ativo {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(233,69,96,0.08);
+        }
+        /* Lista view */
+        #listaView { display: none; }
+        #listaView.ativo { display: block; }
+        #kanbanView { display: none; }
+        #kanbanView.ativo { display: block; }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="admin-sidebar">
+    <div class="sidebar-brand">Pisos<span>Connect</span><div class="sidebar-brand-sub">Painel Admin</div></div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">Principal</div>
+        <a href="/admin/index.html" class="sidebar-link">
+            <span class="link-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg></span> Dashboard
+        </a>
+        <a href="/admin/pedidos.html" class="sidebar-link ativo">
+            <span class="link-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span> Pedidos
+        </a>
+        <div class="nav-section-label" style="margin-top:8px;">Configuração</div>
+        <a href="/admin/catalogo.html" class="sidebar-link">
+            <span class="link-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="7" height="7"/><rect x="15" y="3" width="7" height="7"/><rect x="15" y="15" width="7" height="7"/><rect x="2" y="15" width="7" height="7"/></svg></span> Catálogo
+        </a>
+        <a href="/admin/profissionais.html" class="sidebar-link">
+            <span class="link-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Profissionais
+        </a>
+    </nav>
+    <div class="sidebar-footer">
+        <div class="sidebar-user">
+            <div class="sidebar-user-avatar">A</div>
+            <div>
+                <div class="sidebar-user-nome" data-user-nome>Admin</div>
+                <div class="sidebar-user-role">Administrador</div>
+            </div>
+        </div>
+        <button class="sidebar-link" data-logout style="color:var(--primary);">
+            <span class="link-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span> Sair
+        </button>
+    </div>
+</aside>
+
+<main class="admin-main">
+    <div class="admin-topbar">
+        <div class="topbar-title">Gestão de Pedidos</div>
+        <div class="topbar-actions" style="display:flex;gap:10px;align-items:center;">
+            <div style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:var(--text-3);">
+                <div class="realtime-dot"></div> Tempo real
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-content">
+
+        <!-- Filtros + Export -->
+        <div class="filtros-bar">
+            <input type="text" id="filtroCliente" placeholder="Buscar por cliente..." oninput="aplicarFiltros()">
+            <select id="filtroStatus" onchange="aplicarFiltros()">
+                <option value="">Todos os status</option>
+                <option value="aguardando">Aguardando</option>
+                <option value="confirmado">Confirmado</option>
+                <option value="em_entrega">Em Entrega</option>
+                <option value="entregue">Entregue</option>
+                <option value="cancelado">Cancelado</option>
+            </select>
+            <input type="date" id="filtroDataIni" onchange="aplicarFiltros()" title="Data inicial">
+            <input type="date" id="filtroDataFim" onchange="aplicarFiltros()" title="Data final">
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div class="view-toggles">
+                <button class="view-btn ativo" id="btnKanban" onclick="setView('kanban')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><rect x="3" y="3" width="5" height="18"/><rect x="10" y="3" width="5" height="18"/><rect x="17" y="3" width="5" height="18"/></svg>Kanban
+                </button>
+                <button class="view-btn" id="btnLista" onclick="setView('lista')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>Lista
+                </button>
+            </div>
+            <button class="btn btn-surface btn-sm" onclick="exportarCSV()" title="Exportar pedidos filtrados para Excel">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Exportar CSV
+            </button>
+        </div>
+
+        <!-- Kanban View -->
+        <div id="kanbanView" class="ativo">
+            <div class="kanban-board" id="kanbanBoard">
+                <div style="color:var(--text-3);padding:32px;font-size:0.9rem;">Carregando pedidos...</div>
+            </div>
+        </div>
+
+        <!-- Lista View -->
+        <div id="listaView">
+            <div class="admin-table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Pedido</th>
+                            <th>Cliente</th>
+                            <th>WhatsApp</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Data</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpoLista">
+                        <tr><td colspan="7" style="padding:32px;text-align:center;color:var(--text-3);">Carregando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalPedido">
+    <div class="modal-box">
+        <div class="modal-title">
+            Detalhes do Pedido
+            <button class="modal-close" onclick="fecharModal()">×</button>
+        </div>
+        <div id="modalConteudo"></div>
+        <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px;">
+            <div class="form-group">
+                <label class="form-label">Atualizar Status</label>
+                <select class="form-control" id="novoStatus">
+                    <option value="aguardando">Aguardando</option>
+                    <option value="confirmado">Confirmado</option>
+                    <option value="em_entrega">Em Entrega</option>
+                    <option value="entregue">Entregue</option>
+                    <option value="cancelado">Cancelado</option>
+                </select>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button class="btn btn-primary btn-full" id="btnSalvarStatus" onclick="salvarStatus()">Salvar Status</button>
+                <button class="btn btn-surface" onclick="fecharModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/config.js"></script>
+<script src="/js/supabase.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+    const COLUNAS = [
+        { status:'aguardando', label:'Aguardando', cor:'var(--gold)' },
+        { status:'confirmado', label:'Confirmado',  cor:'var(--info)' },
+        { status:'em_entrega', label:'Em Entrega',  cor:'var(--primary)' },
+        { status:'entregue',   label:'Entregue',    cor:'var(--success)' }
+    ];
+    const STATUS_MAP = {
+        aguardando: { label:'Aguardando', classe:'status-aguardando' },
+        confirmado: { label:'Confirmado', classe:'status-confirmado' },
+        em_entrega: { label:'Em Entrega', classe:'status-em_entrega' },
+        entregue:   { label:'Entregue',   classe:'status-entregue' },
+        cancelado:  { label:'Cancelado',  classe:'status-cancelado' }
+    };
+
+    let _todosOsPedidos = [];
+    let _filtrados = [];
+    let _pedidoAtual = null;
+    let _viewAtual = 'kanban';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await Auth.requireAuth({ requireAdmin: true });
+        Auth.preencherNomeUsuario();
+        Auth.inicializarLogout();
+        await carregarPedidos();
+
+        DB.onNovoPedido(async () => {
+            toast('Novo pedido recebido!', 'success');
+            await carregarPedidos();
+        });
+    });
+
+    async function carregarPedidos() {
+        _todosOsPedidos = await DB.getTodosPedidos();
+        aplicarFiltros();
+    }
+
+    function aplicarFiltros() {
+        const cliente = (document.getElementById('filtroCliente').value || '').toLowerCase();
+        const status  = document.getElementById('filtroStatus').value;
+        const dataIni = document.getElementById('filtroDataIni').value;
+        const dataFim = document.getElementById('filtroDataFim').value;
+
+        _filtrados = _todosOsPedidos.filter(p => {
+            if (cliente && !p.cliente_nome.toLowerCase().includes(cliente)) return false;
+            if (status  && p.status !== status) return false;
+            const d = new Date(p.created_at);
+            if (dataIni && d < new Date(dataIni)) return false;
+            if (dataFim && d > new Date(dataFim + 'T23:59:59')) return false;
+            return true;
+        });
+
+        renderizarKanban();
+        renderizarLista();
+    }
+
+    function setView(v) {
+        _viewAtual = v;
+        document.getElementById('kanbanView').classList.toggle('ativo', v === 'kanban');
+        document.getElementById('listaView').classList.toggle('ativo',  v === 'lista');
+        document.getElementById('btnKanban').classList.toggle('ativo', v === 'kanban');
+        document.getElementById('btnLista').classList.toggle('ativo',  v === 'lista');
+    }
+
+    function renderizarKanban() {
+        const board = document.getElementById('kanbanBoard');
+        board.innerHTML = COLUNAS.map(col => {
+            const itens = _filtrados.filter(p => p.status === col.status);
+            return `
+            <div class="kanban-col" data-status="${col.status}">
+                <div class="kanban-col-header">
+                    <span style="color:${col.cor};">${col.label}</span>
+                    <span class="kanban-count">${itens.length}</span>
+                </div>
+                <div class="kanban-items">
+                    ${itens.length ? itens.map(p => criarCardKanban(p)).join('') : `<div style="font-size:0.78rem;color:var(--text-3);padding:12px;text-align:center;">Nenhum pedido</div>`}
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function criarCardKanban(p) {
+        const total = parseFloat(p.valor_total).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+        const data  = new Date(p.created_at).toLocaleDateString('pt-BR');
+        const hora  = new Date(p.created_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+        return `
+        <div class="kanban-card" onclick="abrirModal('${p.id}')">
+            <div class="kanban-card-num">#${p.numero_pedido || p.id.slice(0,8).toUpperCase()}</div>
+            <div class="kanban-card-cliente">${p.cliente_nome}</div>
+            <div class="kanban-card-valor">${total}</div>
+            <div class="kanban-card-data">${data} às ${hora}</div>
+            <div class="kanban-card-actions">
+                <a href="https://wa.me/${p.cliente_whatsapp}" target="_blank" class="btn btn-success btn-sm" onclick="event.stopPropagation()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:3px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.12 1.527 5.849L0 24l6.292-1.499A11.908 11.908 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.776 9.776 0 0 1-5.017-1.38l-.36-.214-3.732.89.907-3.618-.235-.372A9.775 9.775 0 0 1 2.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+                    WhatsApp
+                </a>
+            </div>
+        </div>`;
+    }
+
+    function renderizarLista() {
+        const tbody = document.getElementById('corpoLista');
+        if (!_filtrados.length) {
+            tbody.innerHTML = '<tr><td colspan="7" style="padding:32px;text-align:center;color:var(--text-3);">Nenhum pedido encontrado com os filtros aplicados.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = _filtrados.map(p => {
+            const st = STATUS_MAP[p.status] || STATUS_MAP.aguardando;
+            const data = new Date(p.created_at).toLocaleDateString('pt-BR');
+            const total = parseFloat(p.valor_total).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+            return `<tr>
+                <td><span style="font-weight:700;">#${p.numero_pedido || p.id.slice(0,8).toUpperCase()}</span></td>
+                <td>${p.cliente_nome}</td>
+                <td><a href="https://wa.me/${p.cliente_whatsapp}" target="_blank" style="color:var(--success);">${p.cliente_whatsapp}</a></td>
+                <td><span style="color:var(--gold);font-weight:700;">${total}</span></td>
+                <td><span class="status-pill ${st.classe}">${st.label}</span></td>
+                <td style="color:var(--text-3);">${data}</td>
+                <td><button class="btn btn-surface btn-sm" onclick="abrirModal('${p.id}')">Detalhes</button></td>
+            </tr>`;
+        }).join('');
+    }
+
+    // ── EXPORT CSV ──────────────────────────────────────────────
+    function exportarCSV() {
+        const rows = [['Pedido','Cliente','WhatsApp','Endereço','Total','Status','Data']];
+        _filtrados.forEach(p => {
+            rows.push([
+                '#' + (p.numero_pedido || p.id.slice(0,8).toUpperCase()),
+                p.cliente_nome,
+                p.cliente_whatsapp,
+                p.endereco_entrega || '',
+                parseFloat(p.valor_total).toFixed(2).replace('.',','),
+                STATUS_MAP[p.status]?.label || p.status,
+                new Date(p.created_at).toLocaleDateString('pt-BR')
+            ]);
+        });
+
+        const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href = url;
+        a.download = `pedidos_pisos_connect_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast('CSV exportado!', 'success');
+    }
+
+    // ── MODAL ────────────────────────────────────────────────────
+    function abrirModal(id) {
+        _pedidoAtual = _todosOsPedidos.find(p => p.id === id);
+        if (!_pedidoAtual) return;
+
+        const p = _pedidoAtual;
+        const total = parseFloat(p.valor_total).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+        const itensHtml = (p.pedido_itens || []).map(i =>
+            `<tr>
+                <td>${i.produto_nome}</td>
+                <td>${i.area_m2} m²</td>
+                <td>${i.caixas} cx</td>
+                <td style="color:var(--gold);">${parseFloat(i.subtotal).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</td>
+            </tr>`
+        ).join('');
+
+        document.getElementById('modalConteudo').innerHTML = `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                <div>
+                    <div style="font-size:0.68rem;color:var(--text-3);text-transform:uppercase;margin-bottom:3px;">Cliente</div>
+                    <div style="font-weight:700;">${p.cliente_nome}</div>
+                </div>
+                <div>
+                    <div style="font-size:0.68rem;color:var(--text-3);text-transform:uppercase;margin-bottom:3px;">WhatsApp</div>
+                    <div style="font-weight:700;">${p.cliente_whatsapp}</div>
+                </div>
+                <div style="grid-column:1/-1;">
+                    <div style="font-size:0.68rem;color:var(--text-3);text-transform:uppercase;margin-bottom:3px;">Endereço de Entrega</div>
+                    <div style="font-weight:600;">${p.endereco_entrega}</div>
+                </div>
+                ${p.observacoes ? `<div style="grid-column:1/-1;">
+                    <div style="font-size:0.68rem;color:var(--text-3);text-transform:uppercase;margin-bottom:3px;">Observações</div>
+                    <div style="color:var(--text-2);">${p.observacoes}</div>
+                </div>` : ''}
+            </div>
+            <table style="width:100%;border-collapse:collapse;margin-bottom:12px;">
+                <thead>
+                    <tr>
+                        <th style="font-size:0.65rem;color:var(--text-3);text-transform:uppercase;padding:8px 0;text-align:left;border-bottom:1px solid var(--border);">Produto</th>
+                        <th style="font-size:0.65rem;color:var(--text-3);text-transform:uppercase;padding:8px 0;text-align:left;border-bottom:1px solid var(--border);">Área</th>
+                        <th style="font-size:0.65rem;color:var(--text-3);text-transform:uppercase;padding:8px 0;text-align:left;border-bottom:1px solid var(--border);">Caixas</th>
+                        <th style="font-size:0.65rem;color:var(--text-3);text-transform:uppercase;padding:8px 0;text-align:left;border-bottom:1px solid var(--border);">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>${itensHtml}</tbody>
+            </table>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--surface-2);border-radius:var(--r-m);">
+                <span style="font-size:0.85rem;color:var(--text-2);">Total do Pedido</span>
+                <span style="font-family:var(--font-title);font-size:1.1rem;font-weight:800;color:var(--gold);">${total}</span>
+            </div>`;
+
+        document.getElementById('novoStatus').value = p.status;
+        document.getElementById('modalPedido').classList.add('ativo');
+    }
+
+    function fecharModal() {
+        document.getElementById('modalPedido').classList.remove('ativo');
+        _pedidoAtual = null;
+    }
+
+    async function salvarStatus() {
+        if (!_pedidoAtual) return;
+        const btn = document.getElementById('btnSalvarStatus');
+        btn.disabled = true; btn.textContent = 'Salvando...';
+        try {
+            const novoStatus = document.getElementById('novoStatus').value;
+            await DB.atualizarStatusPedido(_pedidoAtual.id, novoStatus);
+            toast('Status atualizado!', 'success');
+            fecharModal();
+            await carregarPedidos();
+        } catch(e) {
+            toast('Erro ao atualizar status.', 'error');
+        } finally {
+            btn.disabled = false; btn.textContent = 'Salvar Status';
+        }
+    }
+
+    function toast(msg, tipo='info') {
+        const c = document.getElementById('toastContainer');
+        const el = document.createElement('div');
+        el.className = `toast toast-${tipo}`;
+        el.textContent = msg;
+        c.appendChild(el);
+        setTimeout(() => el.remove(), 4000);
+    }
+</script>
+</body>
+</html>

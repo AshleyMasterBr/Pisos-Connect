@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profissional — Pisos Connect</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#080812">
+    <link rel="stylesheet" href="/css/app.css">
+    <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+    <style>
+        body { padding-bottom: 100px; }
+        .prof-hero {
+            height: 180px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            margin: 0 -18px 24px;
+            font-size: 3.5rem;
+            gap: 8px;
+            position: relative;
+        }
+        .prof-hero-tipo {
+            font-size: 0.68rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px;
+            color: var(--info);
+            background: rgba(78,168,222,0.15);
+            padding: 4px 12px; border-radius: 999px;
+        }
+        .prof-title { font-size: 1.3rem; font-weight: 800; text-align: center; margin-bottom: 4px; }
+        .prof-cidade-tag { font-size: 0.8rem; color: var(--text-3); margin-bottom: 16px; }
+        .prof-desc { font-size: 0.88rem; color: var(--text-2); line-height: 1.7; margin-bottom: 24px; }
+
+        .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+        /* Seção de serviços */
+        .servico-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--r-l);
+            padding: 14px 16px;
+            display: flex; align-items: center;
+            gap: 14px; margin-bottom: 10px;
+        }
+        .servico-icon { font-size: 1.4rem; flex-shrink: 0; }
+        .servico-nome { font-size: 0.88rem; font-weight: 700; margin-bottom: 2px; }
+        .servico-preco { font-family: var(--font-title); font-size: 0.9rem; font-weight: 800; color: var(--info); }
+        .servico-preco small { font-size: 0.65rem; color: var(--text-3); font-weight:400; font-family: var(--font-body); }
+
+        /* Botão fixo de contato */
+        .prof-contact-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(8,8,18,0.97);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid var(--border);
+            padding: 14px 18px;
+            z-index: 800;
+        }
+    </style>
+</head>
+<body>
+
+<header class="app-header">
+    <button class="header-back" onclick="history.back()">←</button>
+    <div class="header-title" id="headerTitulo">Carregando...</div>
+</header>
+
+<main class="page">
+    <div class="container">
+
+        <!-- Skeleton -->
+        <div id="skeletonProf">
+            <div class="skeleton" style="height:180px;margin:0 -18px 24px;border-radius:0;"></div>
+            <div class="skeleton" style="height:24px;margin-bottom:8px;border-radius:6px;"></div>
+            <div class="skeleton" style="height:14px;width:50%;margin-bottom:20px;border-radius:4px;"></div>
+            <div class="skeleton" style="height:60px;border-radius:var(--r-l);"></div>
+        </div>
+
+        <!-- Conteúdo -->
+        <div id="profConteudo" style="display:none;">
+
+            <!-- Hero -->
+            <div class="prof-hero" id="profHero"></div>
+
+            <!-- Info -->
+            <h1 class="prof-title" id="profNome"></h1>
+            <div class="prof-cidade-tag" id="profCidade"></div>
+            <p class="prof-desc" id="profDesc"></p>
+
+            <!-- Site se houver -->
+            <div id="profSiteWrap" style="display:none;margin-bottom:20px;">
+                <a id="profSite" href="#" target="_blank"
+                    style="display:inline-flex;align-items:center;gap:6px;font-size:0.82rem;color:var(--info);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Ver site/Instagram
+                </a>
+            </div>
+
+            <!-- Seção: Serviços (instaladores) -->
+            <div id="servicosSection" style="display:none;">
+                <div class="divider"></div>
+                <div class="section-label mb-16">
+                    <h2>Serviços oferecidos</h2>
+                </div>
+                <div id="servicosList"></div>
+            </div>
+
+            <!-- Seção: Produtos (catálogo vinculado) -->
+            <div id="produtosSection">
+                <div class="divider"></div>
+                <div class="section-label mb-16">
+                    <h2>Produtos disponíveis</h2>
+                    <span id="prodCount" style="font-size:0.75rem;color:var(--text-3);"></span>
+                </div>
+                <div class="produtos-grid" id="produtosList"></div>
+                <div id="semProdutos" style="display:none;font-size:0.82rem;color:var(--text-3);text-align:center;padding:24px;">
+                    Nenhum produto cadastrado ainda.
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<!-- Botão fixo de contato -->
+<div class="prof-contact-bar" id="contactBar" style="display:none;">
+    <button class="btn btn-success btn-full btn-lg" id="btnContato" onclick="entrarEmContato()">
+        Solicitar orçamento via WhatsApp
+    </button>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/config.js"></script>
+<script src="/js/supabase.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+    // Utilizando o sistema de avatar com a primeira/segunda letra
+    function getIniciais(nome) {
+        if (!nome) return 'PC';
+        const p = nome.split(' ');
+        if (p.length >= 2 && p[1].length > 0) return (p[0][0] + p[1][0]).toUpperCase();
+        return p[0].substring(0, 2).toUpperCase();
+    }
+
+    const TIPO_BG   = {
+        loja:      'background:linear-gradient(145deg,#0d1a3a,#1a3a6b)',
+        fabrica:   'background:linear-gradient(145deg,#1a0d0d,#4a1818)',
+        instalador:'background:linear-gradient(145deg,#0d1a0d,#1a4a1a)'
+    };
+    const TIPO_TAG  = { loja:'Loja de Pisos', fabrica:'Fábrica', instalador:'Instalador' };
+    const BG_PROD = {
+        vinilico:'produto-thumb-bg-vinilico', porcellanato:'produto-thumb-bg-porcellanato',
+        laminado:'produto-thumb-bg-laminado', ceramico:'produto-thumb-bg-ceramico'
+    };
+
+    let _profissional = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await Auth.requireAuth();
+        const id = sessionStorage.getItem('profissionalId');
+        if (!id) { window.location.replace('/app/profissionais.html'); return; }
+        await carregarProfissional(id);
+    });
+
+    async function carregarProfissional(id) {
+        try {
+            _profissional = await DB.getProfissional(id);
+            const [servicos, produtos] = await Promise.all([
+                DB.getServicosDoProfissional(id),
+                DB.getProdutosDoProfissional(id)
+            ]);
+            renderizar(_profissional, servicos, produtos);
+        } catch(e) {
+            console.error(e);
+            toast('Profissional não encontrado.', 'error');
+            setTimeout(() => history.back(), 1500);
+        }
+    }
+
+    function renderizar(p, servicos, produtos) {
+        document.getElementById('skeletonProf').remove();
+        document.getElementById('profConteudo').style.display = 'block';
+        document.getElementById('contactBar').style.display = 'block';
+
+        document.title = p.nome_empresa + ' — Pisos Connect';
+        document.getElementById('headerTitulo').textContent = p.nome_empresa;
+
+        // Hero
+        const heroBg = TIPO_BG[p.tipo] || 'background:var(--surface-2)';
+        
+        let avatarHtml = `<span style="font-size:4rem;font-weight:900;letter-spacing:-2px;color:rgba(255,255,255,0.9);">${getIniciais(p.nome_empresa)}</span>`;
+        if (p.logo_url) {
+            avatarHtml = `<img src="${p.logo_url}" alt="Logo" style="width:80px;height:80px;border-radius:20px;object-fit:cover;box-shadow:0 4px 12px rgba(0,0,0,0.4);border:2px solid var(--border);">`;
+        }
+
+        document.getElementById('profHero').innerHTML = `
+            <div style="${heroBg};width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
+                ${avatarHtml}
+                <span class="prof-hero-tipo">${TIPO_TAG[p.tipo] || p.tipo}</span>
+            </div>`;
+
+        document.getElementById('profNome').textContent = p.nome_empresa;
+        document.getElementById('profCidade').textContent = p.cidade;
+        document.getElementById('profDesc').textContent = p.descricao || 'Profissional verificado da plataforma Pisos Connect.';
+
+        if (p.site) {
+            document.getElementById('profSiteWrap').style.display = 'block';
+            const siteLink = document.getElementById('profSite');
+            const href = p.site.startsWith('http') ? p.site : 'https://' + p.site;
+            siteLink.href = href;
+            siteLink.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' + p.site;
+        }
+
+        // Serviços
+        if (servicos.length) {
+            document.getElementById('servicosSection').style.display = 'block';
+            document.getElementById('servicosList').innerHTML = servicos.map(s => `
+            <div class="servico-card">
+                <div class="servico-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+                <div>
+                    <div class="servico-nome">${s.nome}</div>
+                    <div class="servico-preco">
+                        R$ ${parseFloat(s.preco_m2).toFixed(2).replace('.',',')}
+                        <small>/m² de mão de obra</small>
+                    </div>
+                </div>
+            </div>`).join('');
+        }
+
+        // Produtos
+        if (produtos.length) {
+            document.getElementById('prodCount').textContent = `(${produtos.length})`;
+            document.getElementById('produtosList').innerHTML = produtos.map(pr => `
+            <div class="produto-card" onclick="abrirProduto('${pr.id}')">
+                <div class="produto-thumb ${BG_PROD[pr.tipo] || ''}"></div>
+                <div class="produto-info">
+                    <div class="produto-nome">${pr.nome}</div>
+                    <div class="produto-preco">R$ ${parseFloat(pr.preco_m2).toFixed(2).replace('.',',')} <span>/m²</span></div>
+                </div>
+            </div>`).join('');
+        } else {
+            document.getElementById('semProdutos').style.display = 'block';
+        }
+    }
+
+    function abrirProduto(id) {
+        sessionStorage.setItem('produtoId', id);
+        window.location.href = '/app/produto.html';
+    }
+
+    function entrarEmContato() {
+        if (!_profissional) return;
+        const msg = `Olá! Vi o seu perfil no *Pisos Connect* e gostaria de solicitar um orçamento.`;
+        window.open(`https://wa.me/${_profissional.whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    function toast(msg, tipo='info') {
+        const c = document.getElementById('toastContainer');
+        const el = document.createElement('div');
+        el.className = `toast toast-${tipo}`;
+        el.textContent = msg;
+        c.appendChild(el);
+        setTimeout(() => el.remove(), 3500);
+    }
+</script>
+</body>
+</html>
