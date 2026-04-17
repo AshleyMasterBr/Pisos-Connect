@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Início — Pisos Connect</title>
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="../manifest.json">
     <meta name="theme-color" content="#080812">
-    <link rel="stylesheet" href="/css/app.css">
-    <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+    <link rel="stylesheet" href="../css/app.css">
+    <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('../sw.js');</script>
     <style>
         /* Saudação refinada */
         .saudacao { font-size: 0.75rem; color: var(--text-3); margin-bottom: 3px; text-transform:uppercase; letter-spacing:0.8px; font-weight:600; }
@@ -154,7 +154,7 @@
 <!-- Header -->
 <header class="app-header">
     <div class="header-logo">Pisos<span>Connect</span></div>
-    <a href="/app/sacola.html" class="header-action" id="headerSacola" title="Sacola">
+    <a href="../app/sacola.html" class="header-action" id="headerSacola" title="Sacola">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
         <span class="badge-count" id="sacolaBadge" style="display:none;">0</span>
     </a>
@@ -172,7 +172,7 @@
         <div style="font-size:0.7rem; color:var(--text-3);">Conectado como</div>
         <div style="font-size:0.88rem; font-weight:700;" data-user-nome>...</div>
     </div>
-    <a href="/app/pedidos.html" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-s);font-size:0.85rem;transition:var(--tr);" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background=''">
+    <a href="../app/pedidos.html" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-s);font-size:0.85rem;transition:var(--tr);" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background=''">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
         Meus Pedidos
     </a>
@@ -191,7 +191,7 @@
         <div class="saudacao-nome" data-user-nome>Carregando...</div>
 
         <!-- Barra de busca -->
-        <div class="search-bar" onclick="window.location.href='/app/catalogo.html'">
+        <div class="search-bar" onclick="window.location.href='../app/catalogo.html'">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <span>Buscar pisos...</span>
         </div>
@@ -201,7 +201,7 @@
             <div class="home-banner-tag">Destaque da semana</div>
             <div class="home-banner-title">Vinílico Premium<br>com 10% a mais incluso</div>
             <div class="home-banner-sub">Calculamos a quebra por você. Sem surpresas na hora de assentar.</div>
-            <a href="/app/catalogo.html" class="btn btn-primary">Ver catálogo →</a>
+            <a href="../app/catalogo.html" class="btn btn-primary">Ver catálogo →</a>
         </div>
 
         <!-- Categorias -->
@@ -244,7 +244,7 @@
         <!-- Destaques -->
         <div class="section-label mb-16">
             <h2>Em destaque</h2>
-            <a href="/app/catalogo.html">Ver todos</a>
+            <a href="../app/catalogo.html">Ver todos</a>
         </div>
         <div class="destaques-scroll" id="destaquesContainer">
             <div class="destaque-card"><div class="destaque-thumb skeleton"></div><div class="destaque-info"><div class="skeleton" style="height:12px;margin-bottom:6px;border-radius:4px;"></div><div class="skeleton" style="height:16px;width:70%;border-radius:4px;"></div></div></div>
@@ -255,7 +255,7 @@
         <!-- Profissionais parceiros -->
         <div class="section-label mb-16">
             <h2>Profissionais</h2>
-            <a href="/app/profissionais.html">Ver todos</a>
+            <a href="../app/profissionais.html">Ver todos</a>
         </div>
         <div class="prof-scroll" id="profContainer">
             <div class="prof-card"><div class="prof-avatar skeleton" style="margin-bottom:10px;"></div><div class="skeleton" style="height:10px;margin-bottom:5px;border-radius:4px;"></div><div class="skeleton" style="height:13px;border-radius:4px;"></div></div>
@@ -304,32 +304,32 @@
 
 <!-- Bottom Nav com SVG -->
 <nav class="bottom-nav">
-    <a href="/app/home.html" class="nav-item ativo">
+    <a href="../app/home.html" class="nav-item ativo">
         <span class="nav-icon">
             <svg class="icon-home" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         </span>
         <span class="nav-label">Início</span>
     </a>
-    <a href="/app/catalogo.html" class="nav-item">
+    <a href="../app/catalogo.html" class="nav-item">
         <span class="nav-icon">
             <svg viewBox="0 0 24 24"><rect x="2" y="3" width="7" height="7"/><rect x="15" y="3" width="7" height="7"/><rect x="15" y="15" width="7" height="7"/><rect x="2" y="15" width="7" height="7"/></svg>
         </span>
         <span class="nav-label">Catálogo</span>
     </a>
-    <a href="/app/profissionais.html" class="nav-item">
+    <a href="../app/profissionais.html" class="nav-item">
         <span class="nav-icon">
             <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </span>
         <span class="nav-label">Parceiros</span>
     </a>
-    <a href="/app/sacola.html" class="nav-item" id="navSacola">
+    <a href="../app/sacola.html" class="nav-item" id="navSacola">
         <span class="nav-icon" style="position:relative;">
             <svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
             <span class="badge-count" id="sacolaBadge" style="display:none;position:absolute;top:-6px;right:-6px;"></span>
         </span>
         <span class="nav-label">Sacola</span>
     </a>
-    <a href="/app/pedidos.html" class="nav-item">
+    <a href="../app/pedidos.html" class="nav-item">
         <span class="nav-icon">
             <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
         </span>
@@ -340,9 +340,9 @@
 <div class="toast-container" id="toastContainer"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/js/config.js"></script>
-<script src="/js/supabase.js"></script>
-<script src="/js/auth.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/auth.js"></script>
 <script>
     const BG = {
         vinilico:'produto-thumb-bg-vinilico', porcellanato:'produto-thumb-bg-porcellanato',
@@ -387,7 +387,7 @@
 
     function abrirProfissional(id) {
         sessionStorage.setItem('profissionalId', id);
-        window.location.href = '/app/profissional.html';
+        window.location.href = '../app/profissional.html';
     }
 
     async function carregarDestaques() {
@@ -419,12 +419,12 @@
         document.querySelectorAll('.categoria-chip').forEach(c => c.classList.remove('ativo'));
         event.currentTarget.classList.add('ativo');
         sessionStorage.setItem('filtroTipo', tipo);
-        setTimeout(() => window.location.href = '/app/catalogo.html', 200);
+        setTimeout(() => window.location.href = '../app/catalogo.html', 200);
     }
 
     function abrirProduto(id) {
         sessionStorage.setItem('produtoId', id);
-        window.location.href = '/app/produto.html';
+        window.location.href = '../app/produto.html';
     }
 
     function atualizarBadgeSacola() {
