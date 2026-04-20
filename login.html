@@ -8,6 +8,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0D0D1A">
     <link rel="stylesheet" href="css/app.css">
+    <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
     <style>
         body { min-height: 100vh; padding-bottom: 0; display: flex; flex-direction: column; }
 
@@ -363,7 +364,7 @@
                 document.getElementById('senhaInput').value
             );
             toast('Bem-vindo de volta!', 'success');
-            setTimeout(() => window.location.replace(CONFIG.rotas.home), 800);
+            setTimeout(() => window.location.replace('app/home.html'), 800);
         } catch (err) {
             toast(traduzirErro(err.message), 'error');
         } finally {
@@ -414,7 +415,7 @@
         try {
             await DB.verificarOTP(_telefoneAtual, document.getElementById('otpInput').value);
             toast('Autenticado com sucesso!', 'success');
-            setTimeout(() => window.location.replace(CONFIG.rotas.home), 800);
+            setTimeout(() => window.location.replace('app/home.html'), 800);
         } catch (err) {
             toast(traduzirErro(err.message), 'error');
         } finally {

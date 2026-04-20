@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Usuários — Pisos Connect Admin</title>
+    <link rel="stylesheet" href="../css/admin.css">
+    <style>
+        .role-pill {
+            font-size: 0.65rem; font-weight: 700; padding: 3px 8px; border-radius: var(--r-full); text-transform: uppercase;
+        }
+        .role-cliente { background: rgba(78,168,222,0.1); color: var(--info); }
+        .role-profissional { background: rgba(245,166,35,0.1); color: var(--gold); }
+        .role-admin { background: rgba(233,69,96,0.1); color: var(--primary); }
+    </style>
+</head>
+<body>
+
+<aside class="admin-sidebar">
+    <div class="sidebar-brand">Pisos<span>Connect</span><div class="sidebar-brand-sub">Painel Admin</div></div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">Principal</div>
+        <a href="../admin/index.html" class="sidebar-link">Dashboard</a>
+        <a href="../admin/pedidos.html" class="sidebar-link">Pedidos</a>
+        <div class="nav-section-label" style="margin-top:8px;">Configuração</div>
+        <a href="../admin/catalogo.html" class="sidebar-link">Catálogo</a>
+        <a href="../admin/profissionais.html" class="sidebar-link">Profissionais</a>
+        <a href="../admin/usuarios.html" class="sidebar-link ativo">Usuários</a>
+    </nav>
+</aside>
+
+<main class="admin-main">
+    <div class="admin-topbar">
+        <div class="topbar-title">Gestão de Usuários</div>
+    </div>
+
+    <div class="admin-content">
+        <div class="admin-table-wrap">
+            <div class="table-header">
+                <h3>Todos os Usuários</h3>
+                <input type="text" id="userSearch" placeholder="Buscar por nome ou email..." 
+                       style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text-1); font-size: 0.8rem;"
+                       oninput="filtrarUsuarios()">
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>WhatsApp/Email</th>
+                        <th>Nível de Acesso</th>
+                        <th>Cadastro em</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody">
+                    <tr><td colspan="5" style="text-align:center; padding:40px;">Carregando usuários...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/config.js"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/auth.js"></script>
+<script>
+    let _usuarios = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await Auth.requireAuth({ requireAdmin: true });
+        Auth.inicializarLogout();
+        await carregarUsuarios();
+    });
+
+    async function carregarUsuarios() {
+        try {
+            _usuarios = await DB.getTodosPerfis();
+            renderizar();
+        } catch(e) {
+            console.error(e);
+            toast('Erro ao carregar usuários', 'error');
+        }
+    }
+
+    function renderizar(lista = _usuarios) {
+        const tbody = document.getElementById('userTableBody');
+        if (!lista.length) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px;">Nenhum usuário encontrado.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = lista.map(u => `
+            <tr>
+                <td><div style="font-weight:700;">${u.nome || 'N/A'}</div></td>
+                <td><div style="font-size:0.8rem;">${u.whatsapp || '---'}</div></td>
+                <td><span class="role-pill role-${u.role}">${u.role.toUpperCase()}</span></td>
+                <td style="font-size:0.8rem; color:var(--text-3);">${new Date(u.created_at).toLocaleDateString('pt-BR')}</td>
+                <td>
+                    <select onchange="alterarRole('${u.id}', this.value)" style="padding:4px; font-size:0.75rem; border-radius:4px; background:var(--surface-3); color:var(--text-1); border:1px solid var(--border);">
+                        <option value="cliente" ${u.role === 'cliente' ? 'selected' : ''}>Cliente</option>
+                        <option value="profissional" ${u.role === 'profissional' ? 'selected' : ''}>Profissional</option>
+                        <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
+                    </select>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async function alterarRole(id, novaRole) {
+        if (!confirm(`Deseja alterar o acesso para ${novaRole.toUpperCase()}?`)) {
+            await carregarUsuarios(); // reset selective
+            return;
+        }
+        try {
+            await DB.atualizarRoleUsuario(id, novaRole);
+            toast('Acesso atualizado!', 'success');
+            await carregarUsuarios();
+        } catch(e) {
+            console.error(e);
+            toast('Erro ao atualizar acesso', 'error');
+        }
+    }
+
+    function filtrarUsuarios() {
+        const termo = document.getElementById('userSearch').value.toLowerCase();
+        const filtrados = _usuarios.filter(u => 
+            (u.nome && u.nome.toLowerCase().includes(termo)) || 
+            (u.whatsapp && u.whatsapp.toLowerCase().includes(termo))
+        );
+        renderizar(filtrados);
+    }
+
+    function toast(msg, tipo='info') {
+        const c = document.getElementById('toastContainer');
+        const el = document.createElement('div');
+        el.className = `toast toast-${tipo}`;
+        el.textContent = msg;
+        c.appendChild(el);
+        setTimeout(() => el.remove(), 4000);
+    }
+</script>
+</body>
+</html>

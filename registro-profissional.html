@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#080812">
     <link rel="stylesheet" href="css/app.css">
-    <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+    <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
     <style>
         body { padding-bottom: 0; min-height: 100vh; }
         .reg-page {
@@ -183,7 +183,7 @@
         </div>
 
         <div style="text-align:center;margin-top:20px;font-size:0.78rem;color:var(--text-3);">
-            Já tem conta? <a href="/login.html" style="color:var(--primary);font-weight:600;">Entrar</a>
+            Já tem conta? <a href="login.html" style="color:var(--primary);font-weight:600;">Entrar</a>
         </div>
     </div>
 </div>
@@ -260,7 +260,7 @@
 
             // 4. Sucesso
             toast('Cadastro enviado! Aguarde análise em até 24h.', 'success');
-            setTimeout(() => window.location.replace('/login.html'), 2500);
+            setTimeout(() => window.location.replace('login.html'), 2500);
 
         } catch(err) {
             toast(err.message || 'Erro ao cadastrar. Tente novamente.', 'error');

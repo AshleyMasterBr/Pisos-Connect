@@ -276,8 +276,37 @@ const DB = (() => {
         return publicUrl;
     }
 
+    async function uploadFotoProduto(file, nomeArquivo) {
+        const { data, error } = await client.storage
+            .from('produtos_fotos')
+            .upload(nomeArquivo, file, { cacheControl: '3600', upsert: true });
+        if (error) throw error;
+        
+        const { data: { publicUrl } } = client.storage
+            .from('produtos_fotos')
+            .getPublicUrl(nomeArquivo);
+        return publicUrl;
+    }
+
     async function atualizarFotoProfissional(id, logo_url) {
         const { error } = await client.from('profissionais').update({ logo_url }).eq('id', id);
+        if (error) throw error;
+    }
+
+    async function getTodosPerfis() {
+        const { data, error } = await client
+            .from('perfis')
+            .select('*')
+            .order('created_at', { ascending: false });
+        if (error) throw error;
+        return data || [];
+    }
+
+    async function atualizarRoleUsuario(id, role) {
+        const { error } = await client
+            .from('perfis')
+            .update({ role })
+            .eq('id', id);
         if (error) throw error;
     }
 
@@ -314,6 +343,7 @@ const DB = (() => {
         getProfissionais, getProfissional, getProdutosDoProfissional,
         getServicosDoProfissional, cadastrarProfissional, getMeuPerfil_Profissional,
         upsertServico, getTodosProfissionais, atualizarStatusProfissional, onNovoProfissional,
-        uploadFotoLoja, atualizarFotoProfissional
+        uploadFotoLoja, atualizarFotoProfissional, uploadFotoProduto,
+        getTodosPerfis, atualizarRoleUsuario
     };
 })();
